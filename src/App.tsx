@@ -9,6 +9,7 @@ import { IndustryRequirements } from "./components/IndustryRequirements";
 import { AIMatchResults } from "./components/AIMatchResults";
 import { SkillGapFeedback } from "./components/SkillGapFeedback";
 
+// todo
 function App() {
   const location = useLocation();
   const isLandingPage = location.pathname === "/";
