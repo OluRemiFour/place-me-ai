@@ -42,7 +42,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
     try {
       const response = await api.login(email, password);
-      // Backend returns: access_token, user_id, role, name
       const newUser: User = {
         id: response.user_id,
         email,
@@ -69,7 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const response = await api.register({
             email,
             password,
-            confirm_password: confirmPassword || password, // Fallback if not provided, but UI should provide it
+            confirm_password: confirmPassword || password, 
             name,
             role
         });
