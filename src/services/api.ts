@@ -495,7 +495,7 @@ export const api = {
 
   async getInternships(): Promise<Scholarship[]> {
       try {
-          const response = await fetch(`${API_Base_URL}/internships/`); // New Endpoint
+          const response = await fetch(`${API_Base_URL}/internships/`); 
           if (!response.ok) throw new Error('Backend unavailable');
           return await response.json();
       } catch (e) {
