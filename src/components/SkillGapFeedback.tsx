@@ -1,14 +1,17 @@
+import { useState, useEffect } from 'react';
 import { ArrowRight, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-
-interface SkillGap {
-  skill: string;
-  currentLevel: number;
-  requiredLevel: number;
-  estimatedTime: string;
-}
+import { api, SkillGap, Role } from '@/services/api';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface RecommendedAction {
   title: string;
@@ -18,78 +21,51 @@ interface RecommendedAction {
 }
 
 export function SkillGapFeedback() {
-  const studentName = 'Alexandra Rivera';
-  const targetRole = 'Senior Frontend Engineer';
+  const { user } = useAuth();
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [selectedRoleId, setSelectedRoleId] = useState<string>('1');
+  const [analysis, setAnalysis] = useState<{
+    missingSkills: string[];
+    skillsToImprove: SkillGap[];
+    overallReadiness: number;
+    recommendedActions: RecommendedAction[];
+  } | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const missingSkills = [
-    'Next.js',
-    'GraphQL',
-    'Testing (Jest/RTL)',
-    'Performance Optimization'
-  ];
+  const studentName = user?.name || 'Student';
 
-  const skillsToImprove: SkillGap[] = [
-    {
-      skill: 'System Design',
-      currentLevel: 65,
-      requiredLevel: 85,
-      estimatedTime: '8-10 weeks'
-    },
-    {
-      skill: 'Advanced TypeScript',
-      currentLevel: 70,
-      requiredLevel: 90,
-      estimatedTime: '6-8 weeks'
-    },
-    {
-      skill: 'State Management',
-      currentLevel: 75,
-      requiredLevel: 90,
-      estimatedTime: '4-6 weeks'
-    }
-  ];
+  useEffect(() => {
+    const loadRoles = async () => {
+      const rolesData = await api.getRoles();
+      setRoles(rolesData);
+    };
+    loadRoles();
+  }, []);
 
-  const recommendedActions: RecommendedAction[] = [
-    {
-      title: 'Complete Advanced React Patterns Course',
-      description: 'Master compound components, render props, and custom hooks to elevate component architecture skills.',
-      duration: '6 weeks',
-      priority: 'high'
-    },
-    {
-      title: 'Build Production-Grade Project with Next.js',
-      description: 'Create a full-stack application using Next.js 14, implementing SSR, ISR, and API routes.',
-      duration: '8 weeks',
-      priority: 'high'
-    },
-    {
-      title: 'GraphQL Fundamentals & Implementation',
-      description: 'Learn GraphQL queries, mutations, and implement Apollo Client in a React application.',
-      duration: '4 weeks',
-      priority: 'medium'
-    },
-    {
-      title: 'Testing Best Practices Workshop',
-      description: 'Master unit, integration, and E2E testing using Jest, React Testing Library, and Cypress.',
-      duration: '3 weeks',
-      priority: 'high'
-    },
-    {
-      title: 'Web Performance Optimization',
-      description: 'Learn Core Web Vitals, lazy loading, code splitting, and performance monitoring techniques.',
-      duration: '4 weeks',
-      priority: 'medium'
-    },
-    {
-      title: 'System Design Study Group',
-      description: 'Join weekly sessions covering scalability, architecture patterns, and trade-off analysis.',
-      duration: '10 weeks',
-      priority: 'low'
-    }
-  ];
+  useEffect(() => {
+    const loadAnalysis = async () => {
+      setIsLoading(true);
+      try {
+        const data = await api.getSkillGapAnalysis('1', selectedRoleId);
+        setAnalysis(data);
+      } catch (error) {
+        console.error('Failed to load analysis:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadAnalysis();
+  }, [selectedRoleId]);
 
-  const totalEstimatedTime = '24-30 weeks';
-  const overallReadiness = 78;
+  const selectedRole = roles.find(r => r.id === selectedRoleId);
+  const targetRole = selectedRole?.title || 'Senior Frontend Engineer';
+
+  const missingSkills = analysis?.missingSkills || [];
+  const skillsToImprove = analysis?.skillsToImprove || [];
+  const overallReadiness = analysis?.overallReadiness || 78;
+  const recommendedActions = analysis?.recommendedActions || [];
+
+  const totalEstimatedTime = `${Math.ceil(skillsToImprove.length * 6)}-${Math.ceil(skillsToImprove.length * 8)} weeks`;
 
   return (
     <div className="container mx-auto px-8 py-8">
@@ -101,6 +77,31 @@ export function SkillGapFeedback() {
         </p>
       </div>
 
+      {/* Role Selection */}
+      <div className="flex items-center gap-4 mb-8 p-4 border border-black rounded-sm bg-white">
+        <div className="text-sm">
+          <span className="opacity-60">Analyze for Role:</span>
+        </div>
+        <Select value={selectedRoleId} onValueChange={setSelectedRoleId}>
+          <SelectTrigger className="w-[300px] h-10">
+            <SelectValue placeholder="Select a role" />
+          </SelectTrigger>
+          <SelectContent>
+            {roles.map(role => (
+              <SelectItem key={role.id} value={role.id}>
+                {role.title} - {role.company}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {isLoading ? (
+        <div className="flex items-center justify-center h-32">
+          <div className="text-lg font-medium opacity-60">Analyzing skill gaps...</div>
+        </div>
+      ) : (
+      <>
       {/* Overall Status */}
       <div className="border border-black rounded-sm p-8 bg-white mb-8">
         <div className="flex items-center justify-between mb-6">
@@ -241,6 +242,8 @@ export function SkillGapFeedback() {
           <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
         </Button>
       </div>
+      </>
+      )}
     </div>
   );
 }

@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { Search, X } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Search, ArrowRight } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -11,94 +12,31 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-
-interface Role {
-  id: string;
-  title: string;
-  company: string;
-  seniority: string;
-  industry: string;
-  requiredSkills: string[];
-  preferredSkills: string[];
-  experience: string;
-  location: string;
-}
+import { api, Role } from '@/services/api';
 
 export function IndustryRequirements() {
+  const navigate = useNavigate();
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [industryFilter, setIndustryFilter] = useState('all');
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const roles: Role[] = [
-    {
-      id: '1',
-      title: 'Senior Frontend Engineer',
-      company: 'TechFlow Systems',
-      seniority: 'Senior',
-      industry: 'Technology',
-      requiredSkills: ['React', 'TypeScript', 'CSS', 'REST APIs', 'Git'],
-      preferredSkills: ['Next.js', 'GraphQL', 'Testing'],
-      experience: '5+ years',
-      location: 'Remote'
-    },
-    {
-      id: '2',
-      title: 'Full Stack Developer',
-      company: 'DataShift Inc',
-      seniority: 'Mid-Level',
-      industry: 'FinTech',
-      requiredSkills: ['Node.js', 'React', 'SQL', 'Python', 'AWS'],
-      preferredSkills: ['Docker', 'Kubernetes', 'MongoDB'],
-      experience: '3-5 years',
-      location: 'Hybrid'
-    },
-    {
-      id: '3',
-      title: 'Lead Software Architect',
-      company: 'Quantum Labs',
-      seniority: 'Lead',
-      industry: 'Technology',
-      requiredSkills: ['System Design', 'Microservices', 'Cloud Architecture', 'Java', 'Kubernetes'],
-      preferredSkills: ['AI/ML', 'Security', 'DevOps'],
-      experience: '8+ years',
-      location: 'On-site'
-    },
-    {
-      id: '4',
-      title: 'Junior Backend Developer',
-      company: 'Nexus Digital',
-      seniority: 'Junior',
-      industry: 'E-commerce',
-      requiredSkills: ['Python', 'Django', 'SQL', 'REST APIs'],
-      preferredSkills: ['Redis', 'Celery', 'Docker'],
-      experience: '1-2 years',
-      location: 'Remote'
-    },
-    {
-      id: '5',
-      title: 'DevOps Engineer',
-      company: 'Pinnacle Cloud',
-      seniority: 'Mid-Level',
-      industry: 'Cloud Services',
-      requiredSkills: ['AWS', 'Terraform', 'CI/CD', 'Docker', 'Linux'],
-      preferredSkills: ['Ansible', 'Monitoring', 'Security'],
-      experience: '3-4 years',
-      location: 'Remote'
-    },
-    {
-      id: '6',
-      title: 'Mobile Developer',
-      company: 'Vertex Apps',
-      seniority: 'Mid-Level',
-      industry: 'Mobile',
-      requiredSkills: ['React Native', 'JavaScript', 'iOS', 'Android', 'REST APIs'],
-      preferredSkills: ['Native modules', 'Redux', 'Firebase'],
-      experience: '3-5 years',
-      location: 'Hybrid'
-    }
-  ];
+  useEffect(() => {
+    const loadRoles = async () => {
+      try {
+        const data = await api.getRoles();
+        setRoles(data);
+      } catch (error) {
+        console.error('Failed to load roles:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadRoles();
+  }, []);
 
-  const industries = ['all', 'Technology', 'FinTech', 'E-commerce', 'Cloud Services', 'Mobile'];
+  const industries = ['all', ...new Set(roles.map(r => r.industry))];
 
   const filteredRoles = roles.filter(role => {
     const matchesSearch = role.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -106,6 +44,16 @@ export function IndustryRequirements() {
     const matchesIndustry = industryFilter === 'all' || role.industry === industryFilter;
     return matchesSearch && matchesIndustry;
   });
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-8 py-8">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-lg font-medium opacity-60">Loading roles...</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-8 py-8">
@@ -238,9 +186,26 @@ export function IndustryRequirements() {
                   </div>
                 </div>
 
-                <div className="pt-4">
-                  <Button className="w-full h-12 text-base font-semibold">
+                <div className="pt-4 space-y-3">
+                  <Button 
+                    className="w-full h-12 text-base font-semibold group"
+                    onClick={() => {
+                      setSelectedRole(null);
+                      navigate('/matches');
+                    }}
+                  >
                     Find Matching Candidates
+                    <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="w-full h-12 text-base font-semibold border-black"
+                    onClick={() => {
+                      setSelectedRole(null);
+                      navigate('/students');
+                    }}
+                  >
+                    Browse All Candidates
                   </Button>
                 </div>
               </div>
