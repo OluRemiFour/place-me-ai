@@ -1,102 +1,51 @@
-import { useState } from 'react';
-import { Download, ChevronDown } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Download, ChevronDown, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-
-interface Match {
-  id: string;
-  studentName: string;
-  email: string;
-  matchPercentage: number;
-  topSkills: string[];
-  experienceYears: number;
-  location: string;
-  skillsMatched: string[];
-  skillsMissing: string[];
-  experienceAlignment: string;
-}
+import { api, Match, Role } from '@/services/api';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 export function AIMatchResults() {
+  const navigate = useNavigate();
   const [expandedMatch, setExpandedMatch] = useState<string | null>(null);
+  const [matches, setMatches] = useState<Match[]>([]);
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [selectedRoleId, setSelectedRoleId] = useState<string>('1');
+  const [isLoading, setIsLoading] = useState(true);
 
-  const roleName = 'Senior Frontend Engineer';
-  const company = 'TechFlow Systems';
+  useEffect(() => {
+    const loadRoles = async () => {
+      const rolesData = await api.getRoles();
+      setRoles(rolesData);
+    };
+    loadRoles();
+  }, []);
 
-  const matches: Match[] = [
-    {
-      id: '1',
-      studentName: 'Alexandra Rivera',
-      email: 'alexandra.rivera@university.edu',
-      matchPercentage: 92,
-      topSkills: ['React', 'TypeScript', 'CSS'],
-      experienceYears: 5,
-      location: 'Remote',
-      skillsMatched: ['React', 'TypeScript', 'CSS', 'REST APIs', 'Git'],
-      skillsMissing: [],
-      experienceAlignment: 'Exceeds requirement by 0 years'
-    },
-    {
-      id: '2',
-      studentName: 'Marcus Chen',
-      email: 'marcus.chen@tech.edu',
-      matchPercentage: 88,
-      topSkills: ['React', 'JavaScript', 'Node.js'],
-      experienceYears: 4,
-      location: 'Hybrid',
-      skillsMatched: ['React', 'CSS', 'REST APIs', 'Git'],
-      skillsMissing: ['TypeScript'],
-      experienceAlignment: 'Meets minimum requirement'
-    },
-    {
-      id: '3',
-      studentName: 'Samantha Park',
-      email: 'samantha.park@university.edu',
-      matchPercentage: 85,
-      topSkills: ['TypeScript', 'React', 'GraphQL'],
-      experienceYears: 6,
-      location: 'Remote',
-      skillsMatched: ['React', 'TypeScript', 'REST APIs', 'Git'],
-      skillsMissing: ['CSS'],
-      experienceAlignment: 'Exceeds requirement by 1 year'
-    },
-    {
-      id: '4',
-      studentName: 'David Okonkwo',
-      email: 'david.o@institute.edu',
-      matchPercentage: 81,
-      topSkills: ['React', 'Next.js', 'TypeScript'],
-      experienceYears: 4,
-      location: 'Remote',
-      skillsMatched: ['React', 'TypeScript', 'Git'],
-      skillsMissing: ['CSS', 'REST APIs'],
-      experienceAlignment: 'Meets minimum requirement'
-    },
-    {
-      id: '5',
-      studentName: 'Emily Thompson',
-      email: 'emily.thompson@college.edu',
-      matchPercentage: 78,
-      topSkills: ['React', 'JavaScript', 'HTML/CSS'],
-      experienceYears: 3,
-      location: 'On-site',
-      skillsMatched: ['React', 'CSS', 'Git'],
-      skillsMissing: ['TypeScript', 'REST APIs'],
-      experienceAlignment: '2 years below requirement'
-    },
-    {
-      id: '6',
-      studentName: 'James Rodriguez',
-      email: 'james.r@university.edu',
-      matchPercentage: 74,
-      topSkills: ['Vue.js', 'TypeScript', 'CSS'],
-      experienceYears: 5,
-      location: 'Hybrid',
-      skillsMatched: ['TypeScript', 'CSS', 'REST APIs', 'Git'],
-      skillsMissing: ['React'],
-      experienceAlignment: 'Exceeds requirement by 0 years'
-    }
-  ];
+  useEffect(() => {
+    const loadMatches = async () => {
+      setIsLoading(true);
+      try {
+        const data = await api.getMatchesForRole(selectedRoleId);
+        setMatches(data);
+      } catch (error) {
+        console.error('Failed to load matches:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadMatches();
+  }, [selectedRoleId]);
+
+  const selectedRole = roles.find(r => r.id === selectedRoleId);
+  const roleName = selectedRole?.title || 'Senior Frontend Engineer';
+  const company = selectedRole?.company || 'TechFlow Systems';
 
   const exportToCSV = () => {
     const headers = ['Name', 'Email', 'Match %', 'Top Skills', 'Experience', 'Location'];
@@ -132,15 +81,24 @@ export function AIMatchResults() {
         </p>
       </div>
 
-      {/* Actions Bar */}
+      {/* Role Selection & Actions */}
       <div className="flex items-center justify-between mb-8 p-4 border border-black rounded-sm bg-white">
         <div className="flex items-center gap-4">
-          <div className="font-mono text-sm">
-            <span className="opacity-60">ANALYSIS COMPLETED:</span>
-            <span className="ml-2 font-bold">
-              {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-            </span>
+          <div className="text-sm">
+            <span className="opacity-60">Select Role:</span>
           </div>
+          <Select value={selectedRoleId} onValueChange={setSelectedRoleId}>
+            <SelectTrigger className="w-[300px] h-10">
+              <SelectValue placeholder="Select a role" />
+            </SelectTrigger>
+            <SelectContent>
+              {roles.map(role => (
+                <SelectItem key={role.id} value={role.id}>
+                  {role.title} - {role.company}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         <Button onClick={exportToCSV} variant="outline" className="border-black">
           <Download className="h-4 w-4 mr-2" />
@@ -148,7 +106,12 @@ export function AIMatchResults() {
         </Button>
       </div>
 
-      {/* Match Results List */}
+      {isLoading ? (
+        <div className="flex items-center justify-center h-32">
+          <div className="text-lg font-medium opacity-60">Analyzing matches...</div>
+        </div>
+      ) : (
+      /* Match Results List */
       <div className="space-y-4">
         {matches.map((match, idx) => {
           const isExpanded = expandedMatch === match.id;
@@ -243,9 +206,12 @@ export function AIMatchResults() {
                   </div>
 
                   <div className="mt-6 pt-6 border-t border-gray-300 flex gap-3">
-                    <Button className="flex-1 h-10">View Full Profile</Button>
-                    <Button variant="outline" className="flex-1 h-10 border-black">
-                      Schedule Interview
+                    <Button className="flex-1 h-10" onClick={() => navigate(`/students/${match.studentId}`)}>
+                      View Full Profile
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                    <Button variant="outline" className="flex-1 h-10 border-black" onClick={() => navigate('/skill-gap')}>
+                      View Skill Gap
                     </Button>
                   </div>
                 </div>
@@ -254,6 +220,7 @@ export function AIMatchResults() {
           );
         })}
       </div>
+      )}
     </div>
   );
 }

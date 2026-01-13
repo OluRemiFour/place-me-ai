@@ -1,10 +1,9 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Search, Filter } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import {
   Select,
   SelectContent,
@@ -12,113 +11,28 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-
-interface Student {
-  id: string;
-  name: string;
-  email: string;
-  matchScore: number;
-  verifiedSkills: number;
-  totalSkills: number;
-  topSkills: string[];
-  location: string;
-  experience: string;
-}
+import { api, Student } from '@/services/api';
 
 export function StudentsList() {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('score');
+  const [students, setStudents] = useState<Student[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const students: Student[] = [
-    {
-      id: '1',
-      name: 'Alexandra Rivera',
-      email: 'alexandra.rivera@university.edu',
-      matchScore: 92,
-      verifiedSkills: 12,
-      totalSkills: 24,
-      topSkills: ['React', 'TypeScript', 'Node.js'],
-      location: 'Remote',
-      experience: '5 years'
-    },
-    {
-      id: '2',
-      name: 'Marcus Chen',
-      email: 'marcus.chen@tech.edu',
-      matchScore: 88,
-      verifiedSkills: 10,
-      totalSkills: 20,
-      topSkills: ['Python', 'Django', 'PostgreSQL'],
-      location: 'Hybrid',
-      experience: '4 years'
-    },
-    {
-      id: '3',
-      name: 'Samantha Park',
-      email: 'samantha.park@university.edu',
-      matchScore: 91,
-      verifiedSkills: 15,
-      totalSkills: 28,
-      topSkills: ['AWS', 'Kubernetes', 'Docker'],
-      location: 'Remote',
-      experience: '6 years'
-    },
-    {
-      id: '4',
-      name: 'David Okonkwo',
-      email: 'david.o@institute.edu',
-      matchScore: 85,
-      verifiedSkills: 11,
-      totalSkills: 22,
-      topSkills: ['React', 'Next.js', 'GraphQL'],
-      location: 'Remote',
-      experience: '4 years'
-    },
-    {
-      id: '5',
-      name: 'Emily Thompson',
-      email: 'emily.thompson@college.edu',
-      matchScore: 78,
-      verifiedSkills: 8,
-      totalSkills: 18,
-      topSkills: ['JavaScript', 'Vue.js', 'CSS'],
-      location: 'On-site',
-      experience: '3 years'
-    },
-    {
-      id: '6',
-      name: 'James Rodriguez',
-      email: 'james.r@university.edu',
-      matchScore: 89,
-      verifiedSkills: 13,
-      totalSkills: 25,
-      topSkills: ['Java', 'Spring', 'Microservices'],
-      location: 'Hybrid',
-      experience: '5 years'
-    },
-    {
-      id: '7',
-      name: 'Priya Sharma',
-      email: 'priya.sharma@tech.edu',
-      matchScore: 86,
-      verifiedSkills: 9,
-      totalSkills: 19,
-      topSkills: ['React Native', 'iOS', 'Android'],
-      location: 'Remote',
-      experience: '3 years'
-    },
-    {
-      id: '8',
-      name: 'Michael Foster',
-      email: 'michael.f@institute.edu',
-      matchScore: 83,
-      verifiedSkills: 10,
-      totalSkills: 21,
-      topSkills: ['Python', 'TensorFlow', 'ML'],
-      location: 'Remote',
-      experience: '4 years'
-    }
-  ];
+  useEffect(() => {
+    const loadStudents = async () => {
+      try {
+        const data = await api.getStudents();
+        setStudents(data);
+      } catch (error) {
+        console.error('Failed to load students:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadStudents();
+  }, []);
 
   const filteredStudents = students
     .filter(student => 
@@ -132,6 +46,20 @@ export function StudentsList() {
       if (sortBy === 'verified') return b.verifiedSkills - a.verifiedSkills;
       return 0;
     });
+
+  const handleStudentClick = (studentId: string) => {
+    navigate(`/students/${studentId}`);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-8 py-8">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-lg font-medium opacity-60">Loading candidates...</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-8 py-8">
@@ -222,10 +150,10 @@ export function StudentsList() {
             </div>
 
             <div className="flex gap-3">
-              <Link to={`/students/${student.id}`} className="flex-1">
-                <Button className="w-full h-10">View Profile</Button>
-              </Link>
-              <Button variant="outline" className="border-black">
+              <Button className="flex-1 h-10" onClick={() => handleStudentClick(student.id)}>
+                View Profile
+              </Button>
+              <Button variant="outline" className="border-black" onClick={() => navigate('/matches')}>
                 Match
               </Button>
             </div>
