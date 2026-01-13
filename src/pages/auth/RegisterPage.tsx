@@ -1,0 +1,237 @@
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { ArrowRight, Briefcase, GraduationCap, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useAuth, UserRole } from '@/contexts/AuthContext';
+
+export function RegisterPage() {
+  const navigate = useNavigate();
+  const { register, isLoading } = useAuth();
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [selectedRole, setSelectedRole] = useState<UserRole>(null);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+
+    if (!selectedRole) {
+      setError('Please select your role');
+      return;
+    }
+
+    if (!name || !email || !password || !confirmPassword) {
+      setError('Please fill in all fields');
+      return;
+    }
+
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+        setError('Passwords do not match');
+        return;
+    }
+
+    try {
+      await register(email, password, name, selectedRole, confirmPassword); // Pass confirmPassword
+      navigate(selectedRole === 'student' ? '/student-dashboard' : '/industry-dashboard');
+    } catch (err: any) {
+      setError(err.message || 'Registration failed. Please try again.');
+    }
+  };
+
+  return (
+    <div className="min-h-screen w-full flex relative">
+      {/* Mobile Background with Overlay */}
+      <div className="absolute inset-0 z-0 lg:hidden">
+        <div className="absolute inset-0 bg-black/5" />
+        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=2084&auto=format&fit=crop')] bg-cover bg-center opacity-10" />
+      </div>
+
+      {/* Left Panel - Form */}
+      <div className="relative z-10 flex-1 flex items-center justify-center p-6 sm:p-12 lg:p-24 bg-white/80 backdrop-blur-sm lg:bg-white">
+        <div className="w-full max-w-md space-y-10">
+          <div>
+            <Link to="/" className="text-2xl font-bold tracking-tight inline-block hover:opacity-80 transition-opacity">
+              SkillSync
+            </Link>
+            <h1 className="mt-8 text-4xl font-bold tracking-tight text-gray-900">Create Account</h1>
+            <p className="mt-2 text-base text-gray-500">
+              Start matching talent with opportunities today.
+            </p>
+          </div>
+
+          {/* Role Selection */}
+          <div>
+            <Label className="text-sm font-semibold mb-4 block text-gray-900">I am a...</Label>
+            <div className="grid grid-cols-2 gap-4">
+              <button
+                type="button"
+                onClick={() => setSelectedRole('student')}
+                className={`group relative p-4 flex flex-col items-center justify-center border-2 rounded-xl transition-all duration-200 outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 ${
+                  selectedRole === 'student'
+                    ? 'border-black bg-black text-white shadow-lg scale-[1.02]'
+                    : 'border-gray-200 bg-white hover:border-black/30 hover:bg-gray-50'
+                }`}
+              >
+                <GraduationCap className={`h-8 w-8 mb-3 transition-colors ${
+                  selectedRole === 'student' ? 'text-white' : 'text-gray-900'
+                }`} />
+                <div className="text-base font-bold">Student</div>
+                <p className={`text-xs mt-1 text-center font-medium ${
+                  selectedRole === 'student' ? 'text-white/80' : 'text-gray-500'
+                }`}>
+                  Find opportunities
+                </p>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setSelectedRole('industry')}
+                className={`group relative p-4 flex flex-col items-center justify-center border-2 rounded-xl transition-all duration-200 outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 ${
+                  selectedRole === 'industry'
+                    ? 'border-black bg-black text-white shadow-lg scale-[1.02]'
+                    : 'border-gray-200 bg-white hover:border-black/30 hover:bg-gray-50'
+                }`}
+              >
+                <Briefcase className={`h-8 w-8 mb-3 transition-colors ${
+                  selectedRole === 'industry' ? 'text-white' : 'text-gray-900'
+                }`} />
+                <div className="text-base font-bold">Recruiter</div>
+                <p className={`text-xs mt-1 text-center font-medium ${
+                  selectedRole === 'industry' ? 'text-white/80' : 'text-gray-500'
+                }`}>
+                  Find talent
+                </p>
+              </button>
+            </div>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="name">Full Name</Label>
+              <Input
+                id="name"
+                type="text"
+                placeholder="John Doe"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="h-12 bg-white/50 focus:bg-white"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="name@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="h-12 bg-white/50 focus:bg-white"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="h-12 bg-white/50 focus:bg-white"
+                required
+              />
+              <p className="text-xs text-gray-500">Must be at least 6 characters</p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                placeholder="••••••••"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="h-12 bg-white/50 focus:bg-white"
+                required
+              />
+            </div>
+
+            {error && (
+              <div className="p-3 rounded-md bg-red-50 border border-red-200 text-sm text-red-600 animate-in fade-in slide-in-from-top-1">
+                {error}
+              </div>
+            )}
+
+            <Button
+              type="submit"
+              className="w-full h-12 text-base font-bold shadow-md hover:shadow-lg transition-all active:scale-[0.98]"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  Creating account...
+                </>
+              ) : (
+                <>
+                  Create Account
+                  <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+                </>
+              )}
+            </Button>
+          </form>
+
+          <p className="text-center text-sm text-gray-500">
+            Already have an account?{' '}
+            <Link to="/login" className="font-semibold text-black hover:underline">
+              Sign in
+            </Link>
+          </p>
+        </div>
+      </div>
+
+      {/* Right Panel - Visual */}
+      <div className="hidden lg:flex flex-1 relative bg-black text-white items-center justify-center overflow-hidden">
+         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=2084&auto=format&fit=crop')] bg-cover bg-center opacity-40 mix-blend-overlay" />
+        <div className="absolute inset-0 bg-gradient-to-bl from-black/80 to-black/40" />
+        
+        <div className="relative max-w-lg p-12 select-none">
+          <div className="font-mono text-8xl font-bold mb-8 tracking-tighter opacity-90">
+            1.2k+
+          </div>
+          <h2 className="text-4xl font-bold mb-6 leading-tight">
+            Matches made this week
+          </h2>
+          <p className="text-lg text-gray-300 leading-relaxed">
+            Join the fastest growing network of top-tier universities and industry leaders transforming the future of work.
+          </p>
+          
+           <div className="mt-12 flex items-center gap-6">
+            <div className="flex flex-col">
+              <span className="text-3xl font-bold">500+</span>
+              <span className="text-xs text-gray-400 uppercase tracking-widest mt-1">Companies</span>
+            </div>
+            <div className="h-10 w-[1px] bg-gray-700" />
+            <div className="flex flex-col">
+              <span className="text-3xl font-bold">15k+</span>
+              <span className="text-xs text-gray-400 uppercase tracking-widest mt-1">Students</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

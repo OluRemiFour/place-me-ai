@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Users, Briefcase, Target, TrendingUp, BarChart3, Search } from 'lucide-react';
+import { ArrowRight, Users, Briefcase, Target, TrendingUp, BarChart3, Search, ExternalLink, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
 import { api, Student, Role } from '@/services/api';
+
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
 
 export function IndustryDashboard() {
   const { user } = useAuth();
@@ -15,6 +18,14 @@ export function IndustryDashboard() {
   const [roles, setRoles] = useState<Role[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Local state for company details (mock persistence)
+  const [companyDetails, setCompanyDetails] = useState({
+    website: 'https://company.com',
+    social: '@company_tech',
+    location: 'San Francisco, CA'
+  });
+
   const [metrics, setMetrics] = useState({
     totalStudents: 0,
     activeRoles: 0,
@@ -91,11 +102,59 @@ export function IndustryDashboard() {
   return (
     <div className="container mx-auto px-8 py-8">
       {/* Header */}
-      <div className="mb-12">
-        <h1 className="text-4xl font-bold mb-2">Industry Dashboard</h1>
-        <p className="text-sm opacity-60">
-          Welcome back, {user?.name || 'Recruiter'} · Last updated: {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-        </p>
+      <div className="mb-12 flex justify-between items-start">
+        <div>
+           <h1 className="text-4xl font-bold mb-2">Industry Dashboard</h1>
+           <div className="text-sm opacity-60 mb-2">
+             Welcome back, {user?.name || 'Recruiter'} · {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+           </div>
+           <div className="flex gap-4 text-sm opacity-80">
+              {companyDetails.website && <a href={companyDetails.website} target="_blank" className="hover:underline flex items-center gap-1"><ExternalLink className="w-3 h-3"/> {companyDetails.website}</a>}
+              {companyDetails.social && <span>{companyDetails.social}</span>}
+              {companyDetails.location && <span className="flex items-center gap-1"><MapPin className="w-3 h-3"/> {companyDetails.location}</span>}
+           </div>
+        </div>
+        
+        <Dialog>
+            <DialogTrigger asChild>
+                <Button variant="outline" className="border-black">Edit Company Profile</Button>
+            </DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Edit Company Details</DialogTitle>
+                    <DialogDescription>Update your company's public information.</DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="website">Website</Label>
+                        <Input 
+                            id="website" 
+                            defaultValue={companyDetails.website} 
+                            onChange={(e) => setCompanyDetails({...companyDetails, website: e.target.value})}
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="social">Social Handle</Label>
+                        <Input 
+                            id="social" 
+                            defaultValue={companyDetails.social} 
+                            onChange={(e) => setCompanyDetails({...companyDetails, social: e.target.value})}
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="location">Location</Label>
+                        <Input 
+                            id="location" 
+                            defaultValue={companyDetails.location} 
+                            onChange={(e) => setCompanyDetails({...companyDetails, location: e.target.value})}
+                        />
+                    </div>
+                </div>
+                <DialogFooter>
+                    <Button onClick={() => alert("Profile Updated!")}>Save Changes</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
       </div>
 
       {/* Metrics Grid */}

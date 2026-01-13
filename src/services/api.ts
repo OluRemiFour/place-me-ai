@@ -300,6 +300,20 @@ const studentsDB: Student[] = [
   }
 ];
 
+export interface Scholarship {
+  id: number;
+  title: string;
+  provider: string;
+  amount: string;
+  deadline: string;
+  url: string;
+  description: string;
+  match_score: number;
+  tags: string;
+}
+
+const API_Base_URL = "http://localhost:8000/api";
+
 const rolesDB: Role[] = [
   {
     id: '1',
@@ -381,100 +395,236 @@ const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 // API Functions
 export const api = {
+  // Auth
+  async login(email: string, password: string): Promise<any> {
+    const response = await fetch(`${API_Base_URL}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.detail || 'Login failed');
+    }
+    return await response.json();
+  },
+
+  async register(data: any): Promise<any> {
+    const response = await fetch(`${API_Base_URL}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.detail || 'Registration failed');
+    }
+    return await response.json();
+  },
+
+  async forgotPassword(email: string): Promise<any> {
+      const response = await fetch(`${API_Base_URL}/auth/forgot-password`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+      });
+      if (!response.ok) throw new Error('Request failed');
+      return await response.json();
+  },
+
+  async resetPassword(data: any): Promise<any> {
+      const response = await fetch(`${API_Base_URL}/auth/reset-password`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+      });
+      if (!response.ok) throw new Error('Reset failed');
+      return await response.json();
+  },
+
+  // Python Backend Integration
+  async getScholarships(): Promise<Scholarship[]> {
+    try {
+      const response = await fetch(`${API_Base_URL}/scholarships/`);
+      if (!response.ok) throw new Error('Backend unavailable');
+      return await response.json();
+    } catch (e) {
+      console.warn("Python backend offline, using mock data");
+      return [
+        {
+           id: 1,
+           title: "Mock Scholarship (Backend Offline)",
+           provider: "System",
+           amount: "$1000",
+           deadline: new Date().toISOString(),
+           url: "#",
+           description: "Please start the Python backend to see real results",
+           match_score: 99,
+           tags: "Mock"
+        }
+      ];
+    }
+  },
+
+  async scanScholarships(profile: any): Promise<Scholarship[]> {
+    try {
+        const response = await fetch(`${API_Base_URL}/scholarships/scan`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(profile)
+        });
+        if (!response.ok) throw new Error('Scan failed');
+        return await response.json();
+    } catch(e) {
+        console.error(e);
+        return [];
+    }
+  },
+
+  async getInternships(): Promise<Scholarship[]> {
+      try {
+          const response = await fetch(`${API_Base_URL}/internships/`); // New Endpoint
+          if (!response.ok) throw new Error('Backend unavailable');
+          return await response.json();
+      } catch (e) {
+          console.warn("Backend offline/error", e);
+          return [
+              {
+                  id: 1,
+                  title: "Software Engineering Intern",
+                  provider: "Google",
+                  amount: "$50/hr",
+                  deadline: "2024-12-01",
+                  url: "#",
+                  description: "Summer internship...",
+                  match_score: 95,
+                  tags: "Remote, Top Tech"
+              }
+          ];
+      }
+  },
+
+  async scanInternships(profile: any): Promise<Scholarship[]> {
+      try {
+          const response = await fetch(`${API_Base_URL}/internships/scan`, {
+              method: 'POST',
+              headers: {'Content-Type': 'application/json'},
+              body: JSON.stringify(profile)
+          });
+          if (!response.ok) throw new Error('Scan failed');
+          return await response.json();
+      } catch(e) {
+          console.error(e);
+          return [];
+      }
+  },
+
+  async getPersonalizedLearningPath(skills: string[], goal: string): Promise<any> {
+    try {
+      const response = await fetch(`${API_Base_URL}/recommendation/learning-path`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ skills, goal })
+      });
+      if (!response.ok) throw new Error('Failed to generate path');
+      return await response.json();
+    } catch (e) {
+      console.warn("Backend offline/error", e);
+      // Mock response
+      return {
+        raw_response: JSON.stringify([
+          { title: "Advanced React Patterns", description: "Master HOCs and Render Props", estimated_weeks: "2", priority: "High" },
+          { title: "Node.js Microservices", description: "Learn to build scalable services", estimated_weeks: "4", priority: "Medium" }
+        ])
+      };
+    }
+  },
   // Students
   async getStudents(): Promise<Student[]> {
-    await delay(300);
-    return studentsDB;
+    const response = await fetch(`${API_Base_URL}/students/`);
+    if (!response.ok) return [];
+    const users = await response.json();
+    return users.map((u: any) => ({
+      id: u.id,
+      name: u.full_name,
+      email: u.email,
+      university: u.university,
+      skills: u.skills,
+      // Map other fields as needed or provide defaults
+      matchScore: 0, verifiedSkills: 0, totalSkills: 0, topSkills: [], location: '', experience: '', major: '', gpa: 0, graduationYear: 0, certifications: [], projects: []
+    }));
   },
 
   async getStudent(id: string): Promise<Student | null> {
-    await delay(200);
-    return studentsDB.find(s => s.id === id) || null;
+    const response = await fetch(`${API_Base_URL}/students/${id}`);
+    if (!response.ok) return null;
+    const u = await response.json();
+    return {
+      id: u.id,
+      name: u.full_name,
+      email: u.email,
+      university: u.university,
+      skills: u.skills,
+      // Defaults
+      matchScore: 0, verifiedSkills: 0, totalSkills: 0, topSkills: [], location: '', experience: '', major: '', gpa: 0, graduationYear: 0, certifications: [], projects: []
+    };
   },
 
   async searchStudents(query: string): Promise<Student[]> {
-    await delay(200);
-    const lowercaseQuery = query.toLowerCase();
-    return studentsDB.filter(s =>
-      s.name.toLowerCase().includes(lowercaseQuery) ||
-      s.email.toLowerCase().includes(lowercaseQuery) ||
-      s.topSkills.some(skill => skill.toLowerCase().includes(lowercaseQuery))
-    );
+    const response = await fetch(`${API_Base_URL}/students/search?query=${encodeURIComponent(query)}`);
+    if (!response.ok) return [];
+    const users = await response.json();
+    return users.map((u: any) => ({
+        id: u.id,
+        name: u.full_name,
+        email: u.email,
+        university: u.university,
+        skills: u.skills,
+        matchScore: 0, verifiedSkills: 0, totalSkills: 0, topSkills: [], location: '', experience: '', major: '', gpa: 0, graduationYear: 0, certifications: [], projects: []
+    }));
   },
 
   // Roles
   async getRoles(): Promise<Role[]> {
-    await delay(300);
-    return rolesDB;
+    const response = await fetch(`${API_Base_URL}/industry/roles`);
+    if (!response.ok) return [];
+    const roles = await response.json();
+    return roles.map((r: any) => ({
+        id: r.id,
+        title: r.title,
+        company: r.company_name,
+        seniority: 'Mid-Level', // Default
+        industry: 'Technology', // Default
+        requiredSkills: r.required_skills,
+        preferredSkills: [],
+        experience: `${r.min_experience_years} years`,
+        location: r.location,
+        salary: r.salary_range,
+        description: r.description
+    }));
   },
 
   async getRole(id: string): Promise<Role | null> {
-    await delay(200);
-    return rolesDB.find(r => r.id === id) || null;
+    // We can fetch from list or implement specific endpoint if needed. 
+    // industry.py doesn't have get_role single yet, but we can assume we can filter from list or add it.
+    // For now, let's just fetch all and find.
+    const roles = await this.getRoles();
+    return roles.find(r => r.id === id) || null;
   },
 
   // Matching
   async getMatchesForRole(roleId: string): Promise<Match[]> {
-    await delay(500);
-    const role = rolesDB.find(r => r.id === roleId);
-    if (!role) return [];
-
-    return studentsDB.map(student => {
-      const matchedSkills = role.requiredSkills.filter(skill =>
-        student.skills.some(s => s.name.toLowerCase() === skill.toLowerCase())
-      );
-      const missingSkills = role.requiredSkills.filter(skill =>
-        !student.skills.some(s => s.name.toLowerCase() === skill.toLowerCase())
-      );
-      const matchPercentage = Math.round((matchedSkills.length / role.requiredSkills.length) * 100);
-
-      return {
-        id: `${student.id}-${roleId}`,
-        studentId: student.id,
-        roleId,
-        studentName: student.name,
-        email: student.email,
-        matchPercentage,
-        topSkills: student.topSkills,
-        experienceYears: parseInt(student.experience),
-        location: student.location,
-        skillsMatched: matchedSkills,
-        skillsMissing: missingSkills,
-        experienceAlignment: getExperienceAlignment(parseInt(student.experience), role.experience)
-      };
-    }).sort((a, b) => b.matchPercentage - a.matchPercentage);
+    const response = await fetch(`${API_Base_URL}/matches/roles/${roleId}`);
+    if (!response.ok) return [];
+    return await response.json();
   },
 
   async getMatchesForStudent(studentId: string): Promise<Match[]> {
-    await delay(500);
-    const student = studentsDB.find(s => s.id === studentId);
-    if (!student) return [];
-
-    return rolesDB.map(role => {
-      const matchedSkills = role.requiredSkills.filter(skill =>
-        student.skills.some(s => s.name.toLowerCase() === skill.toLowerCase())
-      );
-      const missingSkills = role.requiredSkills.filter(skill =>
-        !student.skills.some(s => s.name.toLowerCase() === skill.toLowerCase())
-      );
-      const matchPercentage = Math.round((matchedSkills.length / role.requiredSkills.length) * 100);
-
-      return {
-        id: `${studentId}-${role.id}`,
-        studentId,
-        roleId: role.id,
-        studentName: student.name,
-        email: student.email,
-        matchPercentage,
-        topSkills: student.topSkills,
-        experienceYears: parseInt(student.experience),
-        location: student.location,
-        skillsMatched: matchedSkills,
-        skillsMissing: missingSkills,
-        experienceAlignment: getExperienceAlignment(parseInt(student.experience), role.experience)
-      };
-    }).sort((a, b) => b.matchPercentage - a.matchPercentage);
+      const response = await fetch(`${API_Base_URL}/matches/students/${studentId}`);
+      if (!response.ok) return [];
+      return await response.json();
   },
+
 
   // Skill Gap Analysis
   async getSkillGapAnalysis(studentId: string, roleId: string): Promise<{
@@ -617,6 +767,34 @@ export const api = {
         { category: 'Data/ML', count: 22 }
       ]
     };
+  },
+
+  async sendMessage(data: any): Promise<any> {
+    try {
+      const response = await fetch(`${API_Base_URL}/communication/message`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      return await response.json();
+    } catch (e) {
+      console.warn("Backend offline/error", e);
+      return { status: "success", message: "Message sent (simulated)" };
+    }
+  },
+
+  async scheduleInterview(data: any): Promise<any> {
+    try {
+      const response = await fetch(`${API_Base_URL}/communication/interview`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      return await response.json();
+    } catch (e) {
+      console.warn("Backend offline/error", e);
+      return { status: "success", message: "Interview scheduled (simulated)" };
+    }
   }
 };
 

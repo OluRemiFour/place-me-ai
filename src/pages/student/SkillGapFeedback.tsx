@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { ArrowRight, Clock } from 'lucide-react';
+import { useParams } from 'react-router-dom';
+import { ArrowRight, Clock, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
@@ -22,6 +23,9 @@ interface RecommendedAction {
 
 export function SkillGapFeedback() {
   const { user } = useAuth();
+  const { id } = useParams<{ id: string }>(); 
+  const studentId = id || '1'; 
+  
   const [roles, setRoles] = useState<Role[]>([]);
   const [selectedRoleId, setSelectedRoleId] = useState<string>('1');
   const [analysis, setAnalysis] = useState<{
@@ -30,9 +34,10 @@ export function SkillGapFeedback() {
     overallReadiness: number;
     recommendedActions: RecommendedAction[];
   } | null>(null);
+  const [learningPath, setLearningPath] = useState<any>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-
-  const studentName = user?.name || 'Student';
+  const studentName = user?.role === 'student' ? user.name : 'Candidate'; 
 
   useEffect(() => {
     const loadRoles = async () => {
@@ -46,7 +51,7 @@ export function SkillGapFeedback() {
     const loadAnalysis = async () => {
       setIsLoading(true);
       try {
-        const data = await api.getSkillGapAnalysis('1', selectedRoleId);
+        const data = await api.getSkillGapAnalysis(studentId, selectedRoleId);
         setAnalysis(data);
       } catch (error) {
         console.error('Failed to load analysis:', error);
@@ -237,10 +242,69 @@ export function SkillGapFeedback() {
           ))}
         </div>
         
-        <Button className="w-full h-12 text-base font-semibold group">
-          Generate Personalized Learning Path
-          <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+        <Button 
+          className="w-full h-12 text-base font-semibold group"
+          onClick={async () => {
+            setIsGenerating(true);
+            try {
+              const result = await api.getPersonalizedLearningPath(studentName.split(' '), targetRole);
+              setLearningPath(result);
+            } catch (e) {
+              console.error(e);
+            } finally {
+              setIsGenerating(false);
+            }
+          }}
+          disabled={isGenerating}
+        >
+          {isGenerating ? 'Generating with AI...' : 'Generate Personalized Learning Path'}
+          {!isGenerating && <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />}
         </Button>
+        
+        {learningPath && (
+          <div className="mt-8 p-6 bg-gray-50 border border-gray-200 rounded-sm">
+            <h4 className="text-xl font-bold mb-4">AI Recommended Path</h4>
+            <div className="prose max-w-none">
+                {(() => {
+                  try {
+                    const steps = typeof learningPath.raw_response === 'string' 
+                      ? JSON.parse(learningPath.raw_response) 
+                      : learningPath.raw_response;
+                    if (!Array.isArray(steps)) throw new Error("Invalid format");
+                    
+                    return (
+                      <div className="space-y-4">
+                        {steps.map((step: any, i: number) => (
+                           <div key={i} className="flex gap-4 p-4 border rounded-md bg-white hover:border-black transition-colors">
+                              <div className="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-black text-white font-bold">
+                                {i + 1}
+                              </div>
+                              <div className="flex-1 space-y-1">
+                                <div className="flex justify-between items-start">
+                                    <h5 className="font-semibold text-lg">{step.title}</h5>
+                                    <Badge variant={step.priority === 'High' ? 'destructive' : 'secondary'}>{step.priority}</Badge>
+                                </div>
+                                <p className="text-sm opacity-80">{step.description}</p>
+                                <div className="flex items-center gap-4 text-xs opacity-60 mt-2">
+                                    <span className="flex items-center gap-1"><Clock className="w-3 h-3"/> {step.estimated_weeks} weeks</span>
+                                    {step.resource_link && (
+                                        <a href={step.resource_link} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-blue-600 hover:underline">
+                                           <ExternalLink className="w-3 h-3"/> Resource
+                                        </a>
+                                    )}
+                                </div>
+                              </div>
+                           </div>
+                        ))}
+                      </div>
+                    )
+                  } catch (e) {
+                    return <pre className="whitespace-pre-wrap font-sans text-sm">{typeof learningPath.raw_response === 'string' ? learningPath.raw_response : JSON.stringify(learningPath, null, 2)}</pre>
+                  }
+                })()}
+            </div>
+          </div>
+        )}
       </div>
       </>
       )}

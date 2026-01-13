@@ -4,6 +4,10 @@ import { Check, ChevronDown, ExternalLink, ArrowLeft, Mail, MapPin, Calendar, Br
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { api, Student, Match } from '@/services/api';
 
 export function StudentDetailPage() {
@@ -144,12 +148,149 @@ export function StudentDetailPage() {
           <Button className="flex-1 h-12 text-base font-semibold" onClick={() => navigate('/matches')}>
             Find Matching Roles
           </Button>
-          <Button variant="outline" className="flex-1 h-12 text-base font-semibold border-black" onClick={() => navigate('/skill-gap')}>
+          <Button 
+             variant="outline" 
+             className="flex-1 h-12 text-base font-semibold border-black" 
+             onClick={() => navigate(`/students/${id}/skill-gap`)} // Point to specific student skill gap? Or generic? For now generic or alert.
+          >
             Skill Gap Analysis
           </Button>
-          <Button variant="outline" className="h-12 px-4 border-black">
-            <Mail className="h-5 w-5" />
-          </Button>
+
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="h-12 px-4 border-black">
+                <Mail className="h-5 w-5" />
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Send Message to {student.name}</DialogTitle>
+                <DialogDescription>
+                  Send a direct message to this candidate regarding their application or profile.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="message">Message *</Label>
+                  <Textarea id="message" placeholder="Type your message here..." />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button onClick={async (e) => {
+                   const btn = e.currentTarget;
+                   const msgInput = document.getElementById('message') as HTMLTextAreaElement;
+                   const msg = msgInput.value;
+                   
+                   if (!msg.trim()) {
+                       alert("Please enter a message.");
+                       return;
+                   }
+
+                   btn.disabled = true;
+                   btn.innerText = "Sending...";
+                   
+                   try {
+                       await api.sendMessage({
+                           student_id: student.id,
+                           student_email: student.email,
+                           student_name: student.name,
+                           message: msg,
+                           sender_id: "current_user_id" 
+                       });
+                       alert("Message Sent!");
+                       msgInput.value = ""; // Clear input
+                   } catch (err) {
+                       alert("Failed to send message.");
+                   } finally {
+                       btn.disabled = false;
+                       btn.innerText = "Send Email";
+                   }
+                }}>Send Email</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          <Dialog>
+            <DialogTrigger asChild>
+                <Button 
+                    className="flex-1 h-12 text-base font-semibold bg-green-600 hover:bg-green-700 text-white"
+                >
+                    Setup Interview
+                </Button>
+            </DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Schedule Interview</DialogTitle>
+                    <DialogDescription>
+                        Set up a time to speak with {student.name}.
+                    </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="date">Date *</Label>
+                            <Input id="date" type="date" />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="time">Time *</Label>
+                            <Input id="time" type="time" />
+                        </div>
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="type">Interview Type *</Label>
+                        <select id="type" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+                            <option value="Video">Video Call</option>
+                            <option value="Phone">Phone Call</option>
+                            <option value="In-Person">In-Person</option>
+                        </select>
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="link">Meeting Link / Location</Label>
+                        <Input id="link" placeholder="https://meet.google.com/..." />
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="notes">Additional Message (Optional)</Label>
+                        <Textarea id="notes" placeholder="Any specific instructions for the candidate..." />
+                    </div>
+                </div>
+                <DialogFooter>
+                    <Button onClick={async (e) => {
+                        const btn = e.currentTarget;
+                        const date = (document.getElementById('date') as HTMLInputElement).value;
+                        const time = (document.getElementById('time') as HTMLInputElement).value;
+                        const type = (document.getElementById('type') as HTMLSelectElement).value;
+                        const link = (document.getElementById('link') as HTMLInputElement).value;
+                        const notes = (document.getElementById('notes') as HTMLTextAreaElement).value;
+                        
+                        if (!date || !time || !type) {
+                            alert("Please fill in all required fields (Date, Time, Type).");
+                            return;
+                        }
+
+                        btn.disabled = true;
+                        btn.innerText = "Scheduling...";
+
+                        try {
+                            await api.scheduleInterview({
+                                student_id: student.id,
+                                student_email: student.email,
+                                date,
+                                time,
+                                type,
+                                link,
+                                notes
+                            });
+                            alert("Interview Scheduled!");
+                        } catch (err) {
+                            alert("Failed to schedule interview.");
+                        } finally {
+                            btn.disabled = false;
+                            btn.innerText = "Confirm Schedule";
+                        }
+                    }}>Confirm Schedule</Button>
+                </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 

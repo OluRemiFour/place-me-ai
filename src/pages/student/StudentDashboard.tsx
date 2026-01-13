@@ -268,13 +268,13 @@ export function StudentDashboard() {
         </div>
 
         <div
-          onClick={() => navigate('/matches')}
+          onClick={() => navigate('/internships')}
           className="border border-black rounded-sm p-6 bg-white hover:shadow-[4px_4px_0_0_#000] transition-all cursor-pointer"
         >
           <Target className="h-6 w-6 mb-3" />
           <h4 className="text-lg font-bold mb-2">Browse Opportunities</h4>
           <p className="text-sm opacity-60 mb-4">
-            Explore roles that match your skills
+            Explore internships and scholarships
           </p>
           <div className="flex items-center gap-2 font-medium">
             <span>Explore</span>

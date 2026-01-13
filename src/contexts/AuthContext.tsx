@@ -2,12 +2,15 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 
 export type UserRole = 'student' | 'industry' | null;
 
+import { api } from '@/services/api';
+
 interface User {
   id: string;
   email: string;
   name: string;
   role: UserRole;
   avatar?: string;
+  token?: string;
 }
 
 interface AuthContextType {
@@ -15,7 +18,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string, role: UserRole) => Promise<void>;
-  register: (email: string, password: string, name: string, role: UserRole) => Promise<void>;
+  register: (email: string, password: string, name: string, role: UserRole, confirmPassword?: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -28,7 +31,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // Check for stored user session
     const storedUser = localStorage.getItem('skillsync_user');
-    if (storedUser) {
+    const token = localStorage.getItem('skillsync_token');
+    if (storedUser && token) {
       setUser(JSON.parse(storedUser));
     }
     setIsLoading(false);
@@ -36,38 +40,58 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string, role: UserRole) => {
     setIsLoading(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
-    const newUser: User = {
-      id: crypto.randomUUID(),
-      email,
-      name: email.split('@')[0].split('.').map(n => n.charAt(0).toUpperCase() + n.slice(1)).join(' '),
-      role,
-      avatar: role === 'student' ? 'AS' : 'IR'
-    };
-    
-    setUser(newUser);
-    localStorage.setItem('skillsync_user', JSON.stringify(newUser));
-    setIsLoading(false);
+    try {
+      const response = await api.login(email, password);
+      // Backend returns: access_token, user_id, role, name
+      const newUser: User = {
+        id: response.user_id,
+        email,
+        name: response.name,
+        role: response.role as UserRole,
+        avatar: response.name.split(' ').map((n: string) => n[0]).join('').toUpperCase(),
+        token: response.access_token
+      };
+      
+      setUser(newUser);
+      localStorage.setItem('skillsync_user', JSON.stringify(newUser));
+      localStorage.setItem('skillsync_token', response.access_token);
+    } catch (error) {
+       console.error(error);
+       throw error;
+    } finally {
+       setIsLoading(false);
+    }
   };
 
-  const register = async (email: string, password: string, name: string, role: UserRole) => {
+  const register = async (email: string, password: string, name: string, role: UserRole, confirmPassword?: string) => {
     setIsLoading(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
-    const newUser: User = {
-      id: crypto.randomUUID(),
-      email,
-      name,
-      role,
-      avatar: name.split(' ').map(n => n[0]).join('').toUpperCase()
-    };
-    
-    setUser(newUser);
-    localStorage.setItem('skillsync_user', JSON.stringify(newUser));
-    setIsLoading(false);
+    try {
+        const response = await api.register({
+            email,
+            password,
+            confirm_password: confirmPassword || password, // Fallback if not provided, but UI should provide it
+            name,
+            role
+        });
+        
+        const newUser: User = {
+            id: response.user_id,
+            email,
+            name: response.name,
+            role: response.role as UserRole,
+            avatar: response.name.split(' ').map((n: string) => n[0]).join('').toUpperCase(),
+            token: response.access_token
+        };
+        
+        setUser(newUser);
+        localStorage.setItem('skillsync_user', JSON.stringify(newUser));
+        localStorage.setItem('skillsync_token', response.access_token);
+    } catch (error) {
+        console.error(error);
+        throw error;
+    } finally {
+        setIsLoading(false);
+    }
   };
 
   const logout = () => {

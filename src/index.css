@@ -102,3 +102,9 @@
       font-family: 'JetBrains Mono', monospace;
     }
   }
+
+  @layer utilities {
+    .btn-interaction {
+      @apply transition-transform active:scale-95;
+    }
+  }
