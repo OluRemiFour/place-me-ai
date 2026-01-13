@@ -312,7 +312,7 @@ export interface Scholarship {
   tags: string;
 }
 
-const API_Base_URL = "http://localhost:8000/api";
+const API_Base_URL = import.meta.env.VITE_API_BASE_URL;
 
 const rolesDB: Role[] = [
   {
@@ -433,13 +433,25 @@ export const api = {
   },
 
   async resetPassword(data: any): Promise<any> {
-      const response = await fetch(`${API_Base_URL}/auth/reset-password`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data)
-      });
-      if (!response.ok) throw new Error('Reset failed');
-      return await response.json();
+    const response = await fetch(`${API_Base_URL}/auth/reset-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    });
+    if (!response.ok) throw new Error('Reset failed');
+    return await response.json();
+  },
+
+  async verifyEmail(token: string): Promise<any> {
+    const response = await fetch(`${API_Base_URL}/auth/verify-email?token=${encodeURIComponent(token)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+    });
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.detail || 'Verification failed');
+    }
+    return await response.json();
   },
 
   // Python Backend Integration
@@ -610,6 +622,37 @@ export const api = {
     // For now, let's just fetch all and find.
     const roles = await this.getRoles();
     return roles.find(r => r.id === id) || null;
+  },
+
+  async createRole(role: any): Promise<any> {
+    const response = await fetch(`${API_Base_URL}/industry/roles`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(role)
+    });
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.detail || 'Failed to create role');
+    }
+    return await response.json();
+  },
+
+  async getRoleApplications(roleId: string): Promise<any[]> {
+    const response = await fetch(`${API_Base_URL}/industry/roles/${roleId}/applications`);
+    if (!response.ok) return [];
+    return await response.json();
+  },
+
+  async updateApplicationStatus(appId: string, status: string): Promise<any> {
+    const response = await fetch(`${API_Base_URL}/industry/applications/${appId}/status?status=${status}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.detail || 'Failed to update status');
+    }
+    return await response.json();
   },
 
   // Matching

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { api } from '@/services/api';
 
 export function VerifyEmailPage() {
   const [searchParams] = useSearchParams();
@@ -13,13 +14,9 @@ export function VerifyEmailPage() {
       setStatus('error');
       return;
     }
-    
-    // Simulate verification for now as backend just returns success
-    // In real implementation: await api.verifyEmail(token)
     const verify = async () => {
         try {
-            await new Promise(resolve => setTimeout(resolve, 1500));
-            // await api.verifyEmail(token);
+            await api.verifyEmail(token);
             setStatus('success');
         } catch (e) {
             setStatus('error');

@@ -41,7 +41,7 @@ export function RegisterPage() {
     }
 
     try {
-      await register(email, password, name, selectedRole, confirmPassword); // Pass confirmPassword
+      await register(email, password, name, selectedRole, confirmPassword); 
       navigate(selectedRole === 'student' ? '/student-dashboard' : '/industry-dashboard');
     } catch (err: any) {
       setError(err.message || 'Registration failed. Please try again.');
