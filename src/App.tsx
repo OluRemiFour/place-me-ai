@@ -19,9 +19,11 @@ import { ScholarshipsPage } from "@/pages/student/ScholarshipsPage";
 import { InternshipsPage } from "@/pages/student/InternshipsPage";
 import { IndustryDashboard } from "@/pages/industry/IndustryDashboard";
 import { ProfileBuilder } from "@/pages/student/ProfileBuilder";
+import { OTPVerificationPage } from "@/pages/auth/OTPVerificationPage";
 import { useAuth } from "@/contexts/AuthContext";
 
 import { RequireRole } from "@/components/RequireRole";
+import { ProfileCompletionGuard } from "@/components/auth/ProfileCompletionGuard";
 
 function App() {
   const { user } = useAuth();
@@ -38,13 +40,14 @@ function App() {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/verify-email" element={<VerifyEmailPage />} />
+          <Route path="/verify-otp" element={<OTPVerificationPage />} />
         </Route>
         
         {/* Protected Dashboard Routes */}
         <Route element={
-          <RequireRole>
+          <ProfileCompletionGuard>
             <DashboardLayout />
-          </RequireRole>
+          </ProfileCompletionGuard>
         }>
           <Route path="/dashboard" element={
             user?.role === 'student' ? <StudentDashboard /> : <IndustryDashboard />

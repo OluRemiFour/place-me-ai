@@ -4,9 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAuth } from '@/contexts/AuthContext';
 import { api, Scholarship } from '@/services/api';
 
 export function ScholarshipsPage() {
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [scholarships, setScholarships] = useState<Scholarship[]>([]);
   const [filterType, setFilterType] = useState<'all' | 'Scholarship' | 'Internship'>('all');
@@ -31,7 +33,7 @@ export function ScholarshipsPage() {
   const handleScan = async () => {
     setIsScanning(true);
     try {
-        const results = await api.scanScholarships({ major: "Computer Science" }); // Mock profile for now
+        const results = await api.scanScholarships({ major: user?.major || "General" }); 
         setScholarships(results);
     } catch(e) {
         console.error(e);

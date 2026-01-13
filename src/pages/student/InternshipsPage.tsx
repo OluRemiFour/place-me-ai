@@ -4,9 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAuth } from '@/contexts/AuthContext';
 import { api, Scholarship } from '@/services/api';
 
 export function InternshipsPage() {
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [internships, setInternships] = useState<Scholarship[]>([]); // reusing Interface for now or create new
   const [filterType, setFilterType] = useState<'all' | 'Remote' | 'On-site'>('all');
@@ -32,7 +34,7 @@ export function InternshipsPage() {
   const handleScan = async () => {
     setIsScanning(true);
     try {
-        const results = await api.scanInternships({ major: "Computer Science" }); // Mock profile for now
+        const results = await api.scanInternships({ major: user?.major || "General" });
         setInternships(results);
     } catch(e) {
         console.error(e);

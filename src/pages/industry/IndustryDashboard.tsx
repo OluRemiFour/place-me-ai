@@ -19,11 +19,11 @@ export function IndustryDashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   
-  // Local state for company details (mock persistence)
+  // Local state for company details (derived from user)
   const [companyDetails, setCompanyDetails] = useState({
-    website: 'https://company.com',
-    social: '@company_tech',
-    location: 'San Francisco, CA'
+    website: user?.company_url || '',
+    social: '', // Not in model yet
+    location: '' // Not in model yet
   });
 
   const [metrics, setMetrics] = useState({

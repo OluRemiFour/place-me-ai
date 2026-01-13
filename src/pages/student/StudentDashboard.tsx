@@ -4,7 +4,7 @@ import { ArrowRight, Award, Target, BookOpen, TrendingUp, ChevronDown, Check } f
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth, SkillDetail } from '@/contexts/AuthContext';
 import { api, Match } from '@/services/api';
 
 export function StudentDashboard() {
@@ -17,49 +17,29 @@ export function StudentDashboard() {
   const studentProfile = {
     name: user?.name || 'Student',
     email: user?.email || '',
-    matchScore: 87,
-    verified: 12,
-    totalSkills: 24,
-    university: 'Stanford University',
-    major: 'Computer Science',
-    gpa: 3.8,
-    graduationYear: 2024
+    matchScore: 0,
+    verified: user?.skills?.filter(s => s.verified).length || 0,
+    totalSkills: user?.skills?.length || 0,
+    university: user?.university || 'Not set',
+    major: user?.major || 'Not set',
+    gpa: user?.gpa || 0,
+    graduationYear: user?.graduationYear || 0
   };
 
-  const skillCategories = [
-    {
-      category: 'Technical Skills',
-      skills: [
-        { name: 'React', level: 92, verified: true },
-        { name: 'TypeScript', level: 88, verified: true },
-        { name: 'Node.js', level: 85, verified: true },
-        { name: 'Python', level: 78, verified: false },
-        { name: 'SQL', level: 82, verified: true }
-      ]
-    },
-    {
-      category: 'Soft Skills',
-      skills: [
-        { name: 'Communication', level: 90, verified: true },
-        { name: 'Team Leadership', level: 85, verified: true },
-        { name: 'Problem Solving', level: 88, verified: false }
-      ]
-    },
-    {
-      category: 'Academic',
-      skills: [
-        { name: 'Research Methods', level: 82, verified: true },
-        { name: 'Technical Writing', level: 78, verified: false },
-        { name: 'Data Analysis', level: 85, verified: true }
-      ]
-    }
-  ];
+  // Group skills by category if they exist
+  const skillCategories: { category: string; skills: SkillDetail[] }[] = user?.skills ? 
+    Array.from(new Set(user.skills.map(s => s.category || 'General'))).map((cat: string) => ({
+      category: cat,
+      skills: user.skills?.filter(s => (s.category || 'General') === cat) || []
+    })) : [];
 
   useEffect(() => {
     const loadMatches = async () => {
       try {
-        const data = await api.getMatchesForStudent('1');
-        setMatches(data.slice(0, 5));
+        if (user?.id) {
+          const data = await api.getMatchesForStudent(user.id);
+          setMatches(data.slice(0, 5));
+        }
       } catch (error) {
         console.error('Failed to load matches:', error);
       } finally {

@@ -4,6 +4,13 @@ export type UserRole = 'student' | 'industry' | null;
 
 import { api } from '@/services/api';
 
+export interface SkillDetail {
+  name: string;
+  level: number;
+  verified: boolean;
+  category: string;
+}
+
 interface User {
   id: string;
   email: string;
@@ -11,15 +18,35 @@ interface User {
   role: UserRole;
   avatar?: string;
   token?: string;
+  bio?: string;
+  location?: string;
+  
+  // Student fields
+  university?: string;
+  major?: string;
+  gpa?: number;
+  graduationYear?: number;
+  skills?: SkillDetail[];
+  
+  // Industry fields
+  company_name?: string;
+  company_url?: string;
+  industry_type?: string;
 }
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  isVerified: boolean;
+  isProfileComplete: boolean;
+  missingFields: string[];
   login: (email: string, password: string, role: UserRole) => Promise<void>;
   register: (email: string, password: string, name: string, role: UserRole, confirmPassword?: string) => Promise<void>;
   logout: () => void;
+  verifyOTP: (otp: string) => Promise<void>;
+  resendOTP: () => Promise<void>;
+  checkProfileStatus: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -27,6 +54,9 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isVerified, setIsVerified] = useState(false);
+  const [isProfileComplete, setIsProfileComplete] = useState(true);
+  const [missingFields, setMissingFields] = useState<string[]>([]);
 
   useEffect(() => {
     // Check for stored user session
@@ -52,13 +82,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       };
       
       setUser(newUser);
+      setIsVerified(response.is_verified);
       localStorage.setItem('skillsync_user', JSON.stringify(newUser));
       localStorage.setItem('skillsync_token', response.access_token);
+      
+      // Auto-check profile status after login
+      await checkStatus(newUser.id);
     } catch (error) {
        console.error(error);
        throw error;
     } finally {
        setIsLoading(false);
+    }
+  };
+
+  const checkStatus = async (userId: string) => {
+    try {
+      const status = await api.getProfileStatus(userId);
+      setIsVerified(status.is_verified);
+      setIsProfileComplete(status.is_profile_complete);
+      setMissingFields(status.missing_fields);
+    } catch (e) {
+      console.error("Profile status check failed", e);
     }
   };
 
@@ -83,14 +128,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         };
         
         setUser(newUser);
+        setIsVerified(response.is_verified);
         localStorage.setItem('skillsync_user', JSON.stringify(newUser));
         localStorage.setItem('skillsync_token', response.access_token);
+        
+        await checkStatus(newUser.id);
     } catch (error) {
         console.error(error);
         throw error;
     } finally {
         setIsLoading(false);
     }
+  };
+
+  const verifyOTP = async (otp: string) => {
+    if (!user) throw new Error("No user logged in");
+    await api.verifyOTP(user.email, otp);
+    setIsVerified(true);
+  };
+
+  const resendOTP = async () => {
+    if (!user) throw new Error("No user logged in");
+    await api.sendOTP(user.email);
+  };
+
+  const checkProfileStatus = async () => {
+    if (user) await checkStatus(user.id);
   };
 
   const logout = () => {
@@ -103,9 +166,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user,
       isAuthenticated: !!user,
       isLoading,
+      isVerified,
+      isProfileComplete,
+      missingFields,
       login,
       register,
-      logout
+      logout,
+      verifyOTP,
+      resendOTP,
+      checkProfileStatus
     }}>
       {children}
     </AuthContext.Provider>

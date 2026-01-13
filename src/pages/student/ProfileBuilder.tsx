@@ -136,10 +136,33 @@ export function ProfileBuilder() {
   };
 
   const handleSave = async () => {
+    if (!user) return;
     setIsSaving(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setIsSaving(false);
-    navigate('/student-dashboard');
+    try {
+      // Map frontend state to backend ProfileUpdate schema
+      const profileData = {
+        bio: personalInfo.bio,
+        location: personalInfo.location,
+        university: education[0]?.institution || '',
+        major: education[0]?.major || '',
+        gpa: parseFloat(education[0]?.gpa) || 0,
+        graduation_year: parseInt(education[0]?.graduationYear) || 0,
+        skills: skills.map(s => ({
+            name: s.name,
+            level: s.level,
+            category: s.category
+        }))
+      };
+
+      await api.updateProfile(user.id, profileData);
+      
+      // Also update local user state if needed (though AuthContext status check will run)
+      navigate('/student-dashboard');
+    } catch (error) {
+      console.error("Failed to save profile", error);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const renderStep = () => {
