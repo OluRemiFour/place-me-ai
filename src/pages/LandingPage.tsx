@@ -107,10 +107,11 @@ export function LandingPage() {
             Now with AI-Powered Matching 2.0
           </Badge>
           <h1 className="text-4xl md:text-6xl lg:text-[72px] leading-[1.1] font-bold tracking-tight mb-6 md:mb-8">
-            Enterprise Talent Matching at <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">Terminal Velocity</span>
+           Every Opportunity, <br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600"> One Intelligent Platform.</span>
           </h1>
           <p className="text-lg md:text-xl mb-8 md:mb-12 max-w-2xl opacity-80 leading-relaxed">
-            AI-powered skill analysis connects students with industry requirements in seconds. Built for recruiters who demand precision and students who demand opportunity.
+            {/* AI-powered skill analysis connects students with industry requirements in seconds. Built for recruiters who demand precision and students who demand opportunity. */}
+        We extract, analyze, and organize unstructured web data into actionable insights, powering scholarship discovery, internship aggregation, and learning resource consolidation at scale.
           </p>
           {isAuthenticated ? (
             <Link to={dashboardPath}>
