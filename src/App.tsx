@@ -27,7 +27,7 @@ import { RequireRole } from "@/components/RequireRole";
 import { ProfileCompletionGuard } from "@/components/auth/ProfileCompletionGuard";
 
 function App() {
-  const { user } = useAuth();
+  const { user, isProfileComplete } = useAuth();
 
   return (
     <Suspense fallback={<p>Loading...</p>}>
