@@ -13,10 +13,16 @@ import { AlertCircle, ArrowRight } from "lucide-react";
 interface ProfileCompletionModalProps {
   isOpen: boolean;
   missingFields: string[];
+  onClose?: () => void;
 }
 
-export function ProfileCompletionModal({ isOpen, missingFields }: ProfileCompletionModalProps) {
+export function ProfileCompletionModal({ isOpen, missingFields, onClose }: ProfileCompletionModalProps) {
   const navigate = useNavigate();
+
+  const handleGoToSettings = () => {
+    if (onClose) onClose();
+    navigate('/complete-profile');
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={() => {}}>
@@ -44,7 +50,7 @@ export function ProfileCompletionModal({ isOpen, missingFields }: ProfileComplet
 
         <DialogFooter className="sm:justify-center">
           <Button 
-            onClick={() => navigate('/complete-profile')}
+            onClick={handleGoToSettings}
             className="w-full h-12 bg-black text-white hover:bg-gray-800 transition-all font-bold group"
           >
             Go to Settings

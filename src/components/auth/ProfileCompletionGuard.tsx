@@ -2,10 +2,12 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Loader2 } from 'lucide-react';
 import { ProfileCompletionModal } from './ProfileCompletionModal';
+import { useState } from 'react';
 
 export function ProfileCompletionGuard({ children }: { children: React.ReactNode }) {
   const { user, isAuthenticated, isLoading, isVerified, isProfileComplete, missingFields } = useAuth();
   const location = useLocation();
+  const [showModal, setShowModal] = useState(true);
 
   if (isLoading) {
     return (
@@ -27,12 +29,17 @@ export function ProfileCompletionGuard({ children }: { children: React.ReactNode
   // Then check profile completion
   const isSettingsPage = location.pathname === '/settings';
   const isProfileBuilder = location.pathname === '/profile-builder'; // For student fallback
+  const isCompleteProfilePage = location.pathname === '/complete-profile';
   
-  if (!isProfileComplete && !isSettingsPage && !isProfileBuilder && location.pathname !== '/verify-otp') {
+  if (!isProfileComplete && !isSettingsPage && !isProfileBuilder && !isCompleteProfilePage && location.pathname !== '/verify-otp') {
     return (
       <>
-        <ProfileCompletionModal isOpen={true} missingFields={missingFields} />
-        <div className="blur-sm pointer-events-none">
+        <ProfileCompletionModal 
+          isOpen={showModal} 
+          missingFields={missingFields} 
+          onClose={() => setShowModal(false)}
+        />
+        <div className={showModal ? "blur-sm pointer-events-none" : ""}>
           {children}
         </div>
       </>
