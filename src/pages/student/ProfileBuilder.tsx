@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useAuth } from '@/contexts/AuthContext';
+import { api } from '@/services/api';
 
 interface Skill {
   name: string;
@@ -159,6 +160,7 @@ export function ProfileBuilder() {
       // Update local state to close the modal
       await checkProfileStatus();
       navigate('/dashboard');
+    } catch (error) {
       console.error("Failed to save profile", error);
     } finally {
       setIsSaving(false);

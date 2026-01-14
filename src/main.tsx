@@ -8,9 +8,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { GoogleOAuthProvider } from '@react-oauth/google';
 
 const basename = import.meta.env.BASE_URL;
-
-// This should ideally be in an env variable
-const GOOGLE_CLIENT_ID = "64188031313-vpoa5scv2n0OmDO2B2VFPv-RT8I-Iqworuksfl5.apps.googleusercontent.com";
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
