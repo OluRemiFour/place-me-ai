@@ -167,10 +167,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (user) await checkStatus(user.id);
   };
 
-  const googleLogin = async (idToken: string, role: UserRole) => {
+  const googleLogin = async (idToken: string, role: UserRole = null) => {
     setIsLoading(true);
     try {
-      const response = await api.googleAuth(idToken, role as string);
+      const response = await api.googleAuth(idToken, role || undefined);
       const newUser: User = {
         id: response.user_id,
         email: response.email || '', // Backend should return email
@@ -187,8 +187,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.setItem('skillsync_verified', response.is_verified.toString());
       
       await checkStatus(newUser.id);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Google login failed", error);
+      if (error.message === 'ROLE_REQUIRED') {
+        throw new Error('ROLE_REQUIRED');
+      }
       throw error;
     } finally {
       setIsLoading(false);

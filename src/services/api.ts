@@ -184,11 +184,11 @@ export const api = {
     return await response.json();
   },
 
-  async googleAuth(idToken: string, role: string): Promise<any> {
+  async googleAuth(id_token: string, role?: string): Promise<any> {
     const response = await fetch(`${API_Base_URL}/auth/google`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id_token: idToken, role })
+        body: JSON.stringify({ id_token, role })
     });
     if (!response.ok) {
         const error = await response.json();

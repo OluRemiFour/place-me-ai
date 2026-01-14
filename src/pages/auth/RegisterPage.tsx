@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth, UserRole } from '@/contexts/AuthContext';
 import { GoogleLogin } from '@react-oauth/google';
+import { RoleSelectionModal } from '@/components/auth/RoleSelectionModal';
 
 export function RegisterPage() {
   const navigate = useNavigate();
@@ -16,6 +17,29 @@ export function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [selectedRole, setSelectedRole] = useState<UserRole>(null);
   const [error, setError] = useState('');
+  const [showRoleModal, setShowRoleModal] = useState(false);
+  const [pendingGoogleToken, setPendingGoogleToken] = useState<string | null>(null);
+
+  const handleGoogleSuccess = async (idToken: string, role: UserRole = selectedRole) => {
+    try {
+      await googleLogin(idToken, role);
+      navigate('/dashboard');
+    } catch (err: any) {
+      if (err.message === 'ROLE_REQUIRED') {
+        setPendingGoogleToken(idToken);
+        setShowRoleModal(true);
+      } else {
+        setError(err.message || 'Google Login failed');
+      }
+    }
+  };
+
+  const handleRoleSelect = (role: UserRole) => {
+    setShowRoleModal(false);
+    if (pendingGoogleToken) {
+      handleGoogleSuccess(pendingGoogleToken, role);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -207,11 +231,8 @@ export function RegisterPage() {
           <div className="flex justify-center">
             <GoogleLogin
               onSuccess={credentialResponse => {
-                if (selectedRole && credentialResponse.credential) {
-                  googleLogin(credentialResponse.credential, selectedRole);
-                  navigate('/dashboard');
-                } else if (!selectedRole) {
-                  setError('Please select a role first');
+                if (credentialResponse.credential) {
+                  handleGoogleSuccess(credentialResponse.credential);
                 }
               }}
               onError={() => {
@@ -232,6 +253,12 @@ export function RegisterPage() {
           </p>
         </div>
       </div>
+
+      <RoleSelectionModal 
+        isOpen={showRoleModal}
+        onClose={() => setShowRoleModal(false)}
+        onSelect={handleRoleSelect}
+      />
 
       {/* Right Panel - Visual */}
       <div className="hidden lg:flex flex-1 relative bg-black text-white items-center justify-center overflow-hidden">
