@@ -16,7 +16,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
 export function LandingPage() {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, isVerified, user } = useAuth();
   
   const companies = [
     'ACME CORP', 'TECHFLOW', 'DATASHIFT', 'NEXUS', 
@@ -63,7 +63,7 @@ export function LandingPage() {
   ];
 
   const dashboardPath = isAuthenticated 
-    ? (user?.role === 'student' ? '/student-dashboard' : '/industry-dashboard')
+    ? (isVerified ? (user?.role === 'student' ? '/student-dashboard' : '/industry-dashboard') : '/verify-otp')
     : '/login';
 
   return (

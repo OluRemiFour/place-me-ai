@@ -1,9 +1,10 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Loader2 } from 'lucide-react';
+import { ProfileCompletionModal } from './ProfileCompletionModal';
 
 export function ProfileCompletionGuard({ children }: { children: React.ReactNode }) {
-  const { user, isAuthenticated, isLoading, isVerified, isProfileComplete } = useAuth();
+  const { user, isAuthenticated, isLoading, isVerified, isProfileComplete, missingFields } = useAuth();
   const location = useLocation();
 
   if (isLoading) {
@@ -24,9 +25,17 @@ export function ProfileCompletionGuard({ children }: { children: React.ReactNode
   }
 
   // Then check profile completion
-  // We allow access to settings page to complete the profile
-  if (!isProfileComplete && !['/settings', '/verify-otp'].includes(location.pathname)) {
-    return <Navigate to="/settings" state={{ incomplete: true }} replace />;
+  const isSettingsPage = location.pathname === '/settings';
+  
+  if (!isProfileComplete && !isSettingsPage && location.pathname !== '/verify-otp') {
+    return (
+      <>
+        <ProfileCompletionModal isOpen={true} missingFields={missingFields} />
+        <div className="blur-sm pointer-events-none">
+          {children}
+        </div>
+      </>
+    );
   }
 
   return <>{children}</>;
