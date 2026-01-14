@@ -36,7 +36,7 @@ export function OTPVerificationPage() {
     } catch (error: any) {
       toast.error(error.message || "Invalid OTP");
     } finally {
-      setIsLoading(true);
+      setIsLoading(false);
     }
   };
 

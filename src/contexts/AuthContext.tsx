@@ -62,8 +62,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Check for stored user session
     const storedUser = localStorage.getItem('skillsync_user');
     const token = localStorage.getItem('skillsync_token');
+    const storedVerified = localStorage.getItem('skillsync_verified') === 'true';
     if (storedUser && token) {
-      setUser(JSON.parse(storedUser));
+      const parsedUser = JSON.parse(storedUser);
+      setUser(parsedUser);
+      setIsVerified(storedVerified);
+      
+      // Verification check on reload
+      checkStatus(parsedUser.id);
     }
     setIsLoading(false);
   }, []);
@@ -85,6 +91,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsVerified(response.is_verified);
       localStorage.setItem('skillsync_user', JSON.stringify(newUser));
       localStorage.setItem('skillsync_token', response.access_token);
+      localStorage.setItem('skillsync_verified', response.is_verified.toString());
       
       // Auto-check profile status after login
       await checkStatus(newUser.id);
@@ -102,6 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsVerified(status.is_verified);
       setIsProfileComplete(status.is_profile_complete);
       setMissingFields(status.missing_fields);
+      localStorage.setItem('skillsync_verified', status.is_verified.toString());
     } catch (e) {
       console.error("Profile status check failed", e);
     }
@@ -131,6 +139,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setIsVerified(response.is_verified);
         localStorage.setItem('skillsync_user', JSON.stringify(newUser));
         localStorage.setItem('skillsync_token', response.access_token);
+        localStorage.setItem('skillsync_verified', response.is_verified.toString());
         
         await checkStatus(newUser.id);
     } catch (error) {
@@ -145,6 +154,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!user) throw new Error("No user logged in");
     await api.verifyOTP(user.email, otp);
     setIsVerified(true);
+    localStorage.setItem('skillsync_verified', 'true');
   };
 
   const resendOTP = async () => {
@@ -159,6 +169,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     setUser(null);
     localStorage.removeItem('skillsync_user');
+    localStorage.removeItem('skillsync_token');
+    localStorage.removeItem('skillsync_verified');
   };
 
   return (
