@@ -26,8 +26,9 @@ export function ProfileCompletionGuard({ children }: { children: React.ReactNode
 
   // Then check profile completion
   const isSettingsPage = location.pathname === '/settings';
+  const isProfileBuilder = location.pathname === '/profile-builder'; // For student fallback
   
-  if (!isProfileComplete && !isSettingsPage && location.pathname !== '/verify-otp') {
+  if (!isProfileComplete && !isSettingsPage && !isProfileBuilder && location.pathname !== '/verify-otp') {
     return (
       <>
         <ProfileCompletionModal isOpen={true} missingFields={missingFields} />

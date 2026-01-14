@@ -184,6 +184,19 @@ export const api = {
     return await response.json();
   },
 
+  async googleAuth(idToken: string, role: string): Promise<any> {
+    const response = await fetch(`${API_Base_URL}/auth/google`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id_token: idToken, role })
+    });
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.detail || 'Google Auth failed');
+    }
+    return await response.json();
+  },
+
   async updateProfile(userId: string, data: any): Promise<any> {
     const response = await fetch(`${API_Base_URL}/auth/update-profile?user_id=${userId}`, {
         method: 'PUT',

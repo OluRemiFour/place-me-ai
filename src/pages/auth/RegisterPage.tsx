@@ -5,10 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth, UserRole } from '@/contexts/AuthContext';
+import { GoogleLogin } from '@react-oauth/google';
 
 export function RegisterPage() {
   const navigate = useNavigate();
-  const { register, isLoading } = useAuth();
+  const { register, googleLogin, isLoading } = useAuth();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -42,7 +43,7 @@ export function RegisterPage() {
 
     try {
       await register(email, password, name, selectedRole, confirmPassword); 
-      navigate(selectedRole === 'student' ? '/student-dashboard' : '/industry-dashboard');
+      navigate('/dashboard');
     } catch (err: any) {
       setError(err.message || 'Registration failed. Please try again.');
     }
@@ -193,6 +194,35 @@ export function RegisterPage() {
               )}
             </Button>
           </form>
+
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-gray-200" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-white px-2 text-gray-500">Or continue with</span>
+            </div>
+          </div>
+
+          <div className="flex justify-center">
+            <GoogleLogin
+              onSuccess={credentialResponse => {
+                if (selectedRole && credentialResponse.credential) {
+                  googleLogin(credentialResponse.credential, selectedRole);
+                  navigate('/dashboard');
+                } else if (!selectedRole) {
+                  setError('Please select a role first');
+                }
+              }}
+              onError={() => {
+                setError('Google Login failed');
+              }}
+              useOneTap
+              theme="outline"
+              size="large"
+              width="100%"
+            />
+          </div>
 
           <p className="text-center text-sm text-gray-500">
             Already have an account?{' '}

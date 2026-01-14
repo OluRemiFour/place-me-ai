@@ -58,9 +58,9 @@ export function Navigation() {
       
       {isStudent && (
         <Link 
-          to="/profile-builder" 
+          to="/settings" 
           onClick={() => mobile && setIsOpen(false)}
-          className={`text-sm font-medium transition-opacity ${isActive('/profile-builder') ? 'opacity-100' : 'opacity-60 hover:opacity-100'} ${mobile ? 'text-lg py-2' : ''}`}
+          className={`text-sm font-medium transition-opacity ${isActive('/settings') ? 'opacity-100' : 'opacity-60 hover:opacity-100'} ${mobile ? 'text-lg py-2' : ''}`}
         >
           Profile
         </Link>
@@ -166,12 +166,10 @@ export function Navigation() {
                 <p className="text-xs opacity-60 capitalize mt-1">{user?.role} Account</p>
               </div>
               <DropdownMenuSeparator />
-              {isStudent && (
-                <DropdownMenuItem onClick={() => navigate('/profile-builder')}>
-                  <User className="mr-2 h-4 w-4" />
-                  Edit Profile
-                </DropdownMenuItem>
-              )}
+              <DropdownMenuItem onClick={() => navigate('/settings')}>
+                <User className="mr-2 h-4 w-4" />
+                Edit Profile
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={handleLogout} className="text-red-600">
                 <LogOut className="mr-2 h-4 w-4" />
                 Sign Out

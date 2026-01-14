@@ -47,6 +47,7 @@ interface AuthContextType {
   verifyOTP: (otp: string) => Promise<void>;
   resendOTP: () => Promise<void>;
   checkProfileStatus: () => Promise<void>;
+  googleLogin: (idToken: string, role: UserRole) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -166,6 +167,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (user) await checkStatus(user.id);
   };
 
+  const googleLogin = async (idToken: string, role: UserRole) => {
+    setIsLoading(true);
+    try {
+      const response = await api.googleAuth(idToken, role as string);
+      const newUser: User = {
+        id: response.user_id,
+        email: response.email || '', // Backend should return email
+        name: response.name,
+        role: response.role as UserRole,
+        avatar: response.avatar || response.name.split(' ').map((n: string) => n[0]).join('').toUpperCase(),
+        token: response.access_token
+      };
+      
+      setUser(newUser);
+      setIsVerified(response.is_verified);
+      localStorage.setItem('skillsync_user', JSON.stringify(newUser));
+      localStorage.setItem('skillsync_token', response.access_token);
+      localStorage.setItem('skillsync_verified', response.is_verified.toString());
+      
+      await checkStatus(newUser.id);
+    } catch (error) {
+      console.error("Google login failed", error);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const logout = () => {
     setUser(null);
     localStorage.removeItem('skillsync_user');
@@ -186,7 +215,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       logout,
       verifyOTP,
       resendOTP,
-      checkProfileStatus
+      checkProfileStatus,
+      googleLogin
     }}>
       {children}
     </AuthContext.Provider>

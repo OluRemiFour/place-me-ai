@@ -19,6 +19,7 @@ import { ScholarshipsPage } from "@/pages/student/ScholarshipsPage";
 import { InternshipsPage } from "@/pages/student/InternshipsPage";
 import { IndustryDashboard } from "@/pages/industry/IndustryDashboard";
 import { ProfileBuilder } from "@/pages/student/ProfileBuilder";
+import { SettingsPage } from "@/pages/SettingsPage";
 import { OTPVerificationPage } from "@/pages/auth/OTPVerificationPage";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -51,6 +52,11 @@ function App() {
         }>
           <Route path="/dashboard" element={
             user?.role === 'student' ? <StudentDashboard /> : <IndustryDashboard />
+          } />
+          
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/complete-profile" element={
+            isProfileComplete ? <Navigate to="/dashboard" replace /> : <SettingsPage />
           } />
           
           {/* Student Specific Routes */}

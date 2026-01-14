@@ -44,7 +44,7 @@ export function ProfileCompletionModal({ isOpen, missingFields }: ProfileComplet
 
         <DialogFooter className="sm:justify-center">
           <Button 
-            onClick={() => navigate('/settings')}
+            onClick={() => navigate('/complete-profile')}
             className="w-full h-12 bg-black text-white hover:bg-gray-800 transition-all font-bold group"
           >
             Go to Settings

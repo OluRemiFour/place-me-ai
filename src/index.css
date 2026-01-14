@@ -98,6 +98,9 @@
       @apply bg-background text-foreground;
       font-family: 'Space Grotesk', sans-serif;
     }
+    input::placeholder, textarea::placeholder {
+      @apply text-zinc-400 opacity-60;
+    }
     .font-mono {
       font-family: 'JetBrains Mono', monospace;
     }

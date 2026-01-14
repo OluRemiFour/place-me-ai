@@ -63,7 +63,7 @@ export function LandingPage() {
   ];
 
   const dashboardPath = isAuthenticated 
-    ? (isVerified ? (user?.role === 'student' ? '/student-dashboard' : '/industry-dashboard') : '/verify-otp')
+    ? (isVerified ? '/dashboard' : '/verify-otp')
     : '/login';
 
   return (
