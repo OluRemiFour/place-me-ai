@@ -1,63 +1,46 @@
-import { Check, ChevronDown, ExternalLink } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Check, ChevronDown, ExternalLink, ShieldCheck, Link as LinkIcon, Hash } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { useState } from 'react';
-import { api } from '@/services/api';
-
-interface Skill {
-  name: string;
-  level: number;
-  verified: boolean;
-}
-
-interface SkillCategory {
-  category: string;
-  skills: Skill[];
-}
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { api, SkillDetail } from '@/services/api';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
 
 export function StudentProfile() {
-  const [expandedCategories, setExpandedCategories] = useState<string[]>(['Technical Skills']);
+  const { user, refreshUser } = useAuth();
+  const [expandedCategories, setExpandedCategories] = useState<string[]>(['Technical']);
+  
+  // State for verification dialog
+  const [verifyDialogOpen, setVerifyDialogOpen] = useState(false);
+  const [selectedSkill, setSelectedSkill] = useState<string | null>(null);
+  const [proofType, setProofType] = useState<'link' | 'serial'>('link');
+  const [proofValue, setProofValue] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const student = {
-    name: 'Alexandra Rivera',
-    email: 'alexandra.rivera@university.edu',
-    matchScore: 87,
-    verified: 12,
-    totalSkills: 24
-  };
+  useEffect(() => {
+    refreshUser();
+  }, []);
 
-  const skillCategories: SkillCategory[] = [
-    {
-      category: 'Technical Skills',
-      skills: [
-        { name: 'React', level: 92, verified: true },
-        { name: 'TypeScript', level: 88, verified: true },
-        { name: 'Node.js', level: 85, verified: true },
-        { name: 'Python', level: 78, verified: false },
-        { name: 'SQL', level: 82, verified: true }
-      ]
-    },
-    {
-      category: 'Soft Skills',
-      skills: [
-        { name: 'Communication', level: 90, verified: true },
-        { name: 'Team Leadership', level: 85, verified: true },
-        { name: 'Problem Solving', level: 88, verified: false },
-        { name: 'Time Management', level: 83, verified: true }
-      ]
-    },
-    {
-      category: 'Domain Knowledge',
-      skills: [
-        { name: 'E-commerce', level: 80, verified: false },
-        { name: 'FinTech', level: 75, verified: false },
-        { name: 'Healthcare Systems', level: 70, verified: false },
-        { name: 'Data Analytics', level: 85, verified: true }
-      ]
+  if (!user) return null;
+
+  // Group skills by category
+  const groupedSkills = (user.skills || []).reduce((acc, skill) => {
+    const cat = skill.category || 'Other';
+    if (!acc[cat]) {
+      acc[cat] = [];
     }
-  ];
+    acc[cat].push(skill);
+    return acc;
+  }, {} as Record<string, SkillDetail[]>);
+
+  // If no skills yet, show defaults or empty state
+  const hasSkills = user.skills && user.skills.length > 0;
 
   const toggleCategory = (category: string) => {
     setExpandedCategories(prev => 
@@ -67,80 +50,91 @@ export function StudentProfile() {
     );
   };
 
-  // State for verification dialog
-  const [verifyDialogOpen, setVerifyDialogOpen] = useState(false);
-  const [selectedSkill, setSelectedSkill] = useState<string | null>(null);
-  const [proofLink, setProofLink] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
   const handleVerifyClick = (skillName: string) => {
     setSelectedSkill(skillName);
     setVerifyDialogOpen(true);
+    setProofValue('');
+    setProofType('link');
   };
 
   const handleVerifySubmit = async () => {
-    if (!selectedSkill) return;
+    if (!selectedSkill || !proofValue) return;
     setIsSubmitting(true);
     try {
-        await api.verifySkill(selectedSkill, proofLink);
+        await api.verifySkill(selectedSkill, proofValue); // Note: Backend should handle type differentiation or we update API signature
+        toast.success("Verification request submitted!");
         setVerifyDialogOpen(false);
-        setProofLink('');
-        // In real app, trigger a toast success
+        setProofValue('');
+        refreshUser();
     } catch (error) {
         console.error("Verification failed", error);
+        toast.error("Failed to submit verification.");
     } finally {
         setIsSubmitting(false);
     }
   };
 
+  // Calculate derived stats
+  const verifiedCount = user.skills?.filter(s => s.verified).length || 0;
+  const totalSkills = user.skills?.length || 0;
+
   return (
-    <div className="container mx-auto px-8 py-8">
+    <div className="container mx-auto px-4 md:px-8 py-8">
       {/* Header */}
-      <div className="mb-12">
-        <h1 className="text-4xl font-bold mb-2">Student Profile</h1>
+      <div className="mb-10">
+        <h1 className="text-3xl font-bold mb-2">My Profile</h1>
         <p className="text-sm opacity-60">
-          Last updated: {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+          Manage your skills, experience, and certifications.
         </p>
       </div>
 
-      {/* Profile Overview */}
-      <div className="border border-black rounded-sm p-12 mb-8 bg-white">
-        <div className="flex items-start justify-between mb-8">
+      {/* Profile Overview Card */}
+      <div className="border border-black rounded-lg p-8 mb-8 bg-white shadow-sm">
+        <div className="flex flex-col md:flex-row items-start justify-between mb-8 gap-6">
           <div>
-            <h2 className="text-3xl font-bold mb-2">{student.name}</h2>
-            <p className="text-base opacity-60">{student.email}</p>
-          </div>
-          <div className="text-right">
-            <div className="font-mono text-7xl font-bold leading-none">
-              {student.matchScore}%
+            <div className="flex items-center gap-3 mb-2">
+                <h2 className="text-3xl font-bold">{user.name}</h2>
+                {user.role === 'student' && <Badge variant="secondary">Student</Badge>}
             </div>
-            <p className="text-sm opacity-60 mt-2">Overall Match Readiness</p>
+            <p className="text-base opacity-60 mb-1">{user.email}</p>
+            <p className="text-sm opacity-60">{user.university} · {user.major}</p>
+          </div>
+          <div className="text-left md:text-right">
+             {/* We could show profile strength or match readiness if available */}
+             <div className="inline-flex items-center gap-2 px-3 py-1 bg-green-50 text-green-700 rounded-full text-sm font-medium border border-green-200">
+                <ShieldCheck className="w-4 h-4" />
+                Profile Status: {user.is_verified ? 'Verified' : 'Active'}
+             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-8 mb-8">
-          <div className="border-l-2 border-black pl-6">
-            <div className="text-4xl font-bold mb-1">{student.verified}</div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8 pt-6 border-t border-gray-100">
+          <div>
+            <div className="text-3xl font-bold mb-1">{verifiedCount}</div>
             <p className="text-sm opacity-60">Verified Skills</p>
           </div>
-          <div className="border-l-2 border-black pl-6">
-            <div className="text-4xl font-bold mb-1">{student.totalSkills}</div>
+          <div>
+            <div className="text-3xl font-bold mb-1">{totalSkills}</div>
             <p className="text-sm opacity-60">Total Skills</p>
           </div>
-          <div className="border-l-2 border-black pl-6">
-            <div className="text-4xl font-bold mb-1">4.8</div>
-            <p className="text-sm opacity-60">Performance Rating</p>
+          <div>
+            <div className="text-3xl font-bold mb-1">{user.gpa || 'N/A'}</div>
+            <p className="text-sm opacity-60">GPA</p>
+          </div>
+           <div>
+            <div className="text-3xl font-bold mb-1">{user.graduationYear || 'N/A'}</div>
+            <p className="text-sm opacity-60">Class Year</p>
           </div>
         </div>
 
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-3">
           <Link to="/roles" className="flex-1">
-            <Button className="w-full h-12 text-base font-semibold">
+            <Button className="w-full h-11 text-base font-semibold shadow-md active:scale-[0.99] transition-all">
               Find Matching Roles
             </Button>
           </Link>
           <Link to="/skill-gap" className="flex-1">
-            <Button variant="outline" className="w-full h-12 text-base font-semibold border-black">
+            <Button variant="outline" className="w-full h-11 text-base font-semibold border-black hover:bg-gray-50">
               Skill Gap Analysis
             </Button>
           </Link>
@@ -148,53 +142,65 @@ export function StudentProfile() {
       </div>
 
       {/* Skills Breakdown */}
-      <div className="space-y-4">
-        {skillCategories.map((category) => {
-          const isExpanded = expandedCategories.includes(category.category);
+      <div className="space-y-4 mb-8">
+        <h3 className="text-xl font-bold mb-4">Skills & Verification</h3>
+        
+        {!hasSkills && (
+            <div className="p-8 border border-dashed border-gray-300 rounded-lg text-center bg-gray-50">
+                <p className="text-gray-500 mb-4">No skills added yet.</p>
+                <Link to="/profile-builder">
+                    <Button variant="outline">Update Skills in Profile Builder</Button>
+                </Link>
+            </div>
+        )}
+
+        {Object.entries(groupedSkills).map(([category, skills]) => {
+          const isExpanded = expandedCategories.includes(category);
           
           return (
-            <div key={category.category} className="border border-black rounded-sm bg-white">
+            <div key={category} className="border border-gray-200 rounded-lg bg-white overflow-hidden transition-all hover:border-black/50">
               <button
-                onClick={() => toggleCategory(category.category)}
-                className="w-full p-6 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                onClick={() => toggleCategory(category)}
+                className="w-full p-5 flex items-center justify-between hover:bg-gray-50 transition-colors"
               >
-                <div className="flex items-center gap-4">
-                  <h3 className="text-xl font-semibold">{category.category}</h3>
-                  <Badge variant="outline" className="font-mono">
-                    {category.skills.length}
+                <div className="flex items-center gap-3">
+                  <h3 className="text-lg font-semibold">{category}</h3>
+                  <Badge variant="secondary" className="font-mono text-xs">
+                    {skills.length}
                   </Badge>
                 </div>
                 <ChevronDown 
-                  className={`h-5 w-5 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                  className={`h-5 w-5 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
                 />
               </button>
 
               {isExpanded && (
-                <div className="border-t border-black p-6 space-y-4">
-                  {category.skills.map((skill) => (
+                <div className="border-t border-gray-100 p-5 space-y-4 bg-gray-50/30">
+                  {skills.map((skill) => (
                     <div key={skill.name} className="space-y-2">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                          <span className="font-medium">{skill.name}</span>
+                          <span className="font-medium text-gray-900">{skill.name}</span>
                           {skill.verified ? (
-                            <span className="w-5 h-5 bg-black text-white rounded-full flex items-center justify-center">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-black text-white text-xs font-medium">
                               <Check className="h-3 w-3" />
+                              Verified
                             </span>
                           ) : (
                              <Button 
                                 variant="ghost" 
                                 size="sm" 
-                                className="h-6 text-xs text-blue-600 hover:text-blue-800 px-2"
+                                className="h-7 text-xs text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-2 font-medium"
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     handleVerifyClick(skill.name);
                                 }}
                              >
-                                Verify
+                                Verify Now
                              </Button>
                           )}
                         </div>
-                        <span className="font-mono font-bold">{skill.level}%</span>
+                        <span className="font-mono font-bold text-sm">{skill.level}%</span>
                       </div>
                       <Progress value={skill.level} className="h-2" />
                     </div>
@@ -206,59 +212,49 @@ export function StudentProfile() {
         })}
       </div>
 
-      {/* Credentials Section */}
-      <div className="mt-8 border border-black rounded-sm p-8 bg-white">
-        <h3 className="text-xl font-semibold mb-6">Verified Credentials</h3>
-        <div className="space-y-3">
-          {[
-            { title: 'Full Stack Development Certification', issuer: 'Tech Academy', date: '2024' },
-            { title: 'Advanced JavaScript', issuer: 'CodeMasters', date: '2023' },
-            { title: 'Cloud Architecture', issuer: 'Cloud Institute', date: '2024' }
-          ].map((credential, idx) => (
-            <div key={idx} className="flex items-center justify-between py-3 border-b border-gray-200 last:border-0">
-              <div>
-                <p className="font-medium">{credential.title}</p>
-                <p className="text-sm opacity-60">{credential.issuer} · {credential.date}</p>
-              </div>
-              <button className="opacity-60 hover:opacity-100 transition-opacity">
-                <ExternalLink className="h-4 w-4" />
-              </button>
-            </div>
-          ))}
-        </div>
-      </div>
-      
       {/* Verification Dialog */}
-      {verifyDialogOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-            <div className="bg-white p-6 rounded-lg w-full max-w-md shadow-xl animate-in fade-in zoom-in-95 duration-200">
-                <h3 className="text-xl font-bold mb-4">Verify Skill: {selectedSkill}</h3>
-                <p className="text-sm text-gray-500 mb-4">
-                    Please provide a link to a certification, test result, or portfolio item that demonstrates your proficiency in this skill.
-                </p>
+      <Dialog open={verifyDialogOpen} onOpenChange={setVerifyDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+                <DialogTitle>Verify Skill: {selectedSkill}</DialogTitle>
+                <DialogDescription>
+                    Provide proof of your proficiency to get verified.
+                </DialogDescription>
+            </DialogHeader>
+            
+            <Tabs defaultValue="link" value={proofType} onValueChange={(v) => setProofType(v as 'link' | 'serial')}>
+                <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="link">
+                        <LinkIcon className="h-4 w-4 mr-2"/>
+                        Link
+                    </TabsTrigger>
+                    <TabsTrigger value="serial">
+                        <Hash className="h-4 w-4 mr-2"/>
+                        Serial Number
+                    </TabsTrigger>
+                </TabsList>
                 
-                <div className="space-y-4">
-                    <div>
-                        <label className="text-sm font-medium mb-1 block">Proof URL</label>
-                        <input 
-                            type="url" 
-                            className="w-full border p-2 rounded-md"
-                            placeholder="https://coursera.org/verify/..."
-                            value={proofLink}
-                            onChange={(e) => setProofLink(e.target.value)}
-                        />
-                    </div>
-                    
-                    <div className="flex justify-end gap-3 pt-2">
-                        <Button variant="outline" onClick={() => setVerifyDialogOpen(false)}>Cancel</Button>
-                        <Button onClick={handleVerifySubmit} disabled={!proofLink || isSubmitting}>
-                            {isSubmitting ? 'Submitting...' : 'Submit for Verification'}
-                        </Button>
-                    </div>
+                <div className="py-4">
+                    <Label htmlFor="proof" className="mb-2 block">
+                        {proofType === 'link' ? 'Certification / Portfolio URL' : 'Certificate Serial Number'}
+                    </Label>
+                    <Input
+                        id="proof"
+                        placeholder={proofType === 'link' ? 'https://...' : 'e.g. A1B2-C3D4'}
+                        value={proofValue}
+                        onChange={(e) => setProofValue(e.target.value)}
+                    />
                 </div>
-            </div>
-        </div>
-      )}
+            </Tabs>
+
+            <DialogFooter>
+                <Button variant="outline" onClick={() => setVerifyDialogOpen(false)}>Cancel</Button>
+                <Button onClick={handleVerifySubmit} disabled={!proofValue || isSubmitting}>
+                    {isSubmitting ? 'Submitting...' : 'Submit Verification'}
+                </Button>
+            </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

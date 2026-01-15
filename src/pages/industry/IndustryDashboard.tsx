@@ -28,6 +28,9 @@ export function IndustryDashboard() {
     location: user?.location || '',
     bio: user?.bio || ''
   });
+  
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const { isProfileComplete } = useAuth();
 
   const [metrics, setMetrics] = useState({
     totalStudents: 0,
@@ -43,6 +46,13 @@ export function IndustryDashboard() {
     // Force refresh context on load to ensure header/modal data is fresh
     refreshUser();
   }, []);
+
+  useEffect(() => {
+    if (!isProfileComplete && user?.role === 'industry') {
+        const timer = setTimeout(() => setShowProfileModal(true), 1000);
+        return () => clearTimeout(timer);
+    }
+  }, [isProfileComplete, user]);
 
   useEffect(() => {
     // Sync state with user context when it changes (e.g. after update)
@@ -101,7 +111,7 @@ export function IndustryDashboard() {
            </div>
         </div>
         
-        <Dialog>
+        <Dialog open={showProfileModal} onOpenChange={setShowProfileModal}>
             <DialogTrigger asChild>
                 <Button variant="outline" className="border-black">Edit Company Profile</Button>
             </DialogTrigger>
@@ -136,7 +146,7 @@ export function IndustryDashboard() {
                             id="location" 
                             value={companyDetails.location} 
                             onChange={(e) => setCompanyDetails({...companyDetails, location: e.target.value})}
-                            placeholder="e.g. San Francisco, CA"
+                           placeholder="e.g. San Francisco, CA"
                         />
                     </div>
                     <div className="space-y-2">
@@ -170,6 +180,7 @@ export function IndustryDashboard() {
                             // Optional: Could reload page or use a toast here
                             // For now, simpler alert to confirm action
                             toast.success("Company profile updated successfully!");
+                            setShowProfileModal(false);
                         } catch (e) {
                             console.error(e);
                             toast.error("Failed to update profile.");
@@ -312,23 +323,46 @@ export function IndustryDashboard() {
 
       {/* Two Column Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-        {/* Top Skills in Demand */}
-        <div className="border border-black rounded-sm p-8 bg-white">
-          <h2 className="text-xl font-bold mb-6">In-Demand Skills</h2>
-          <div className="space-y-4">
-            {metrics.topSkills.map((item, idx) => (
-              <div key={item.skill} className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <span className="font-mono text-sm opacity-40">{String(idx + 1).padStart(2, '0')}</span>
-                    <span className="font-semibold">{item.skill}</span>
+        {/* Skills Analytics Column */}
+        <div className="space-y-6">
+            {/* Top Skills in Demand */}
+            <div className="border border-black rounded-sm p-6 bg-white">
+              <h2 className="text-xl font-bold mb-4">In-Demand Skills</h2>
+              <div className="space-y-4">
+                {metrics.topSkills.map((item, idx) => (
+                  <div key={item.skill} className="space-y-2">
+                    <div className="flex items-center justify-between text-sm">
+                      <div className="flex items-center gap-2">
+                         <Badge variant={idx < 3 ? "default" : "outline"} className={idx < 3 ? "bg-black hover:bg-black/90" : "text-gray-500"}>
+                            #{idx + 1}
+                         </Badge>
+                         <span className="font-semibold">{item.skill}</span>
+                      </div>
+                      <span className="font-mono font-bold text-xs">{item.demand}%</span>
+                    </div>
+                    <Progress value={item.demand} className="h-1.5" />
                   </div>
-                  <span className="font-mono text-sm font-bold">{item.demand}%</span>
-                </div>
-                <Progress value={item.demand} className="h-1.5" />
+                ))}
               </div>
-            ))}
-          </div>
+            </div>
+
+            {/* Skill Category Distribution */}
+            <div className="border border-black rounded-sm p-6 bg-white">
+                <h2 className="text-xl font-bold mb-4">Category Distribution</h2>
+                 <div className="space-y-3">
+                    {metrics.skillDistribution.length > 0 ? metrics.skillDistribution.map((dist, i) => (
+                        <div key={i} className="flex items-center justify-between p-2 hover:bg-gray-50 rounded cursor-default group">
+                            <div className="flex items-center gap-2">
+                                <div className={`w-2 h-2 rounded-full ${['bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-yellow-500'][i % 4]}`}></div>
+                                <span className="text-sm font-medium">{dist.category}</span>
+                            </div>
+                            <span className="font-mono text-xs opacity-60 group-hover:opacity-100">{dist.count} skills</span>
+                        </div>
+                    )) : (
+                        <div className="text-center py-4 opacity-50 text-sm">No distribution data available</div>
+                    )}
+                </div>
+            </div>
         </div>
 
         {/* Candidate Search & List */}

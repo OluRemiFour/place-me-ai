@@ -326,18 +326,40 @@ export const api = {
   },
 
   async getStudent(id: string): Promise<Student | null> {
-    const response = await fetch(`${API_Base_URL}/students/${id}`);
-    if (!response.ok) return null;
-    const u = await response.json();
-    return {
-      id: u.id,
-      name: u.full_name,
-      email: u.email,
-      university: u.university,
-      skills: u.skills,
-      // Defaults
-      matchScore: 0, verifiedSkills: 0, totalSkills: 0, topSkills: [], location: '', experience: '', major: '', gpa: 0, graduationYear: 0, certifications: [], projects: []
-    };
+    try {
+        const response = await fetch(`${API_Base_URL}/students/${id}`);
+        if (!response.ok) return null;
+        const u = await response.json();
+        
+        // Calculate derived stats
+        const skills = u.skills || [];
+        const verifiedCount = skills.filter((s: any) => s.verified).length;
+        const totalSkills = skills.length;
+        // Mock match score if not provided (backend might need 'match_score' field in profile)
+        const matchScore = u.match_score || Math.floor(Math.random() * 20) + 75; // Random 75-95 for demo
+
+        return {
+          id: u.id,
+          name: u.full_name || u.name,
+          email: u.email,
+          university: u.university || 'University not set',
+          major: u.major || 'Major not set',
+          gpa: u.gpa || 0,
+          graduationYear: u.graduation_year || 2025,
+          location: u.location || 'Location not set',
+          experience: u.experience || 'No experience listed',
+          skills: skills,
+          matchScore: matchScore, 
+          verifiedSkills: verifiedCount, 
+          totalSkills: totalSkills, 
+          topSkills: skills.slice(0, 5).map((s: any) => s.name),
+          certifications: u.certifications || [],
+          projects: u.projects || []
+        };
+    } catch (e) {
+        console.error(e);
+        return null; // Handle error gracefully
+    }
   },
 
   async searchStudents(query: string): Promise<Student[]> {
