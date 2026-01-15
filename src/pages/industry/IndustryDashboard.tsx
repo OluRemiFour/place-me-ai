@@ -15,7 +15,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 
 export function IndustryDashboard() {
-  const { user, checkProfileStatus, updateUser } = useAuth();
+  const { user, checkProfileStatus, refreshUser, updateUser } = useAuth();
   const navigate = useNavigate();
   const [students, setStudents] = useState<Student[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
@@ -38,6 +38,11 @@ export function IndustryDashboard() {
     matchTrend: [] as { date: string; matches: number }[],
     skillDistribution: [] as { category: string; count: number }[]
   });
+
+  useEffect(() => {
+    // Force refresh context on load to ensure header/modal data is fresh
+    refreshUser();
+  }, []);
 
   useEffect(() => {
     // Sync state with user context when it changes (e.g. after update)
@@ -205,28 +210,93 @@ export function IndustryDashboard() {
         </div>
       </div>
 
-      {/* Charts Row */}
+      {/* Pipeline and Activity Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-        {/* Weekly Match Trend */}
+        {/* Hiring Pipeline Funnel */}
         <div className="border border-black rounded-sm p-8 bg-white">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold">Weekly Match Trend</h2>
+            <h2 className="text-xl font-bold">Hiring Pipeline</h2>
             <BarChart3 className="h-5 w-5 opacity-40" />
           </div>
-          <SimpleBarChart 
-            data={metrics.matchTrend.map(d => ({ label: d.date, value: d.matches }))}
-          />
+          <div className="space-y-4">
+              <div className="relative">
+                  <div className="flex justify-between text-sm font-semibold mb-1">
+                      <span>Applied</span>
+                      <span>142</span>
+                  </div>
+                  <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
+                      <div className="bg-black h-full rounded-full" style={{ width: '100%' }}></div>
+                  </div>
+              </div>
+              <div className="relative pl-4">
+                   <div className="flex justify-between text-sm font-semibold mb-1">
+                      <span>Screening</span>
+                      <span>45</span>
+                  </div>
+                  <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
+                      <div className="bg-black h-full rounded-full" style={{ width: '32%' }}></div>
+                  </div>
+              </div>
+               <div className="relative pl-8">
+                   <div className="flex justify-between text-sm font-semibold mb-1">
+                      <span>Interviewing</span>
+                      <span>12</span>
+                  </div>
+                  <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
+                      <div className="bg-black h-full rounded-full" style={{ width: '8%' }}></div>
+                  </div>
+              </div>
+               <div className="relative pl-12">
+                   <div className="flex justify-between text-sm font-semibold mb-1">
+                      <span>Offers</span>
+                      <span>3</span>
+                  </div>
+                  <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
+                      <div className="bg-black h-full rounded-full" style={{ width: '2%' }}></div>
+                  </div>
+              </div>
+          </div>
         </div>
 
-        {/* Skills Distribution */}
+        {/* Recent Activity Feed */}
         <div className="border border-black rounded-sm p-8 bg-white">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold">Skill Category Distribution</h2>
-            <BarChart3 className="h-5 w-5 opacity-40" />
+            <h2 className="text-xl font-bold">Recent Activity</h2>
+            <div className="flex gap-2">
+                 <Badge variant="outline" className="text-xs">All</Badge>
+                 <Badge variant="secondary" className="text-xs bg-gray-100">Applications</Badge>
+            </div>
           </div>
-          <SimpleBarChart 
-            data={metrics.skillDistribution.map(d => ({ label: d.category, value: d.count }))}
-          />
+          <div className="space-y-4 max-h-[220px] overflow-y-auto pr-2">
+             <div className="flex gap-3 items-start border-b border-gray-100 pb-3">
+                <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-xs">JD</div>
+                <div>
+                    <p className="text-sm font-medium">John Doe applied for <span className="font-bold">Frontend Engineer</span></p>
+                    <p className="text-xs opacity-50">2 hours ago</p>
+                </div>
+             </div>
+             <div className="flex gap-3 items-start border-b border-gray-100 pb-3">
+                <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center text-green-700 font-bold text-xs">AS</div>
+                <div>
+                    <p className="text-sm font-medium">Alice Smith completed <span className="font-bold">Technical Assessment</span></p>
+                    <p className="text-xs opacity-50">5 hours ago</p>
+                </div>
+             </div>
+             <div className="flex gap-3 items-start border-b border-gray-100 pb-3">
+                <div className="h-8 w-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-700 font-bold text-xs">MK</div>
+                <div>
+                    <p className="text-sm font-medium">Mike Kim accepted interview invite</p>
+                    <p className="text-xs opacity-50">Yesterday</p>
+                </div>
+             </div>
+              <div className="flex gap-3 items-start">
+                <div className="h-8 w-8 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-700 font-bold text-xs">SYS</div>
+                <div>
+                    <p className="text-sm font-medium">New match recommendation for <span className="font-bold">Backend Dev</span></p>
+                    <p className="text-xs opacity-50">Yesterday</p>
+                </div>
+             </div>
+          </div>
         </div>
       </div>
 

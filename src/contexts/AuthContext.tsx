@@ -47,6 +47,7 @@ interface AuthContextType {
   verifyOTP: (otp: string) => Promise<void>;
   resendOTP: () => Promise<void>;
   checkProfileStatus: () => Promise<void>;
+  refreshUser: () => Promise<void>;
   googleLogin: (idToken: string, role: UserRole) => Promise<void>;
   updateUser: (updates: Partial<User>) => void;
 }
@@ -168,6 +169,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (user) await checkStatus(user.id);
   };
 
+  const refreshUser = async () => {
+      if (!user) return;
+      try {
+          const profile = await api.getProfile(user.id);
+          // Merge profile data into user object
+          const updatedUser: User = {
+              ...user,
+              ...profile,
+              // Map any incompatible fields if necessary
+          };
+          setUser(updatedUser);
+          localStorage.setItem('skillsync_user', JSON.stringify(updatedUser));
+          
+          // Also update status flags
+          setIsVerified(profile.is_verified);
+          setIsProfileComplete(profile.is_profile_complete);
+      } catch (e) {
+          console.error("Failed to refresh user profile", e);
+      }
+  };
+
   const googleLogin = async (idToken: string, role: UserRole = null) => {
     setIsLoading(true);
     try {
@@ -220,6 +242,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       verifyOTP,
       resendOTP,
       checkProfileStatus,
+      refreshUser,
       googleLogin,
       updateUser: (updates: Partial<User>) => {
         if (user) {

@@ -28,7 +28,7 @@ const isValidUrl = (url: string) => {
 };
 
 export function SettingsPage() {
-  const { user, isProfileComplete, checkProfileStatus, updateUser } = useAuth();
+  const { user, isProfileComplete, checkProfileStatus, refreshUser, updateUser } = useAuth();
   const navigate = useNavigate();
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
@@ -42,6 +42,14 @@ export function SettingsPage() {
     bio: '',
     company_url: ''
   });
+
+  useEffect(() => {
+    const refreshProfile = async () => {
+        // Force refresh from backend to ensure inputs aren't stale
+        await refreshUser();
+    };
+    refreshProfile();
+  }, []);
 
   useEffect(() => {
     if (user?.role === 'industry') {

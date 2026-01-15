@@ -14,16 +14,22 @@ export function StudentDashboard() {
   const [expandedCategories, setExpandedCategories] = useState<string[]>(['Technical Skills']);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Calculate Readiness Score dynamically
+  const verifiedCount = user?.skills?.filter(s => s.verified).length || 0;
+  const gpaScore = (user?.gpa || 0) * 10;
+  const skillScore = verifiedCount * 15;
+  const calculatedReadiness = Math.min(100, Math.round(gpaScore + skillScore));
+
   const studentProfile = {
     name: user?.name || 'Student',
     email: user?.email || '',
-    matchScore: 0,
-    verified: user?.skills?.filter(s => s.verified).length || 0,
+    matchScore: calculatedReadiness,
+    verified: verifiedCount,
     totalSkills: user?.skills?.length || 0,
     university: user?.university || 'Not set',
     major: user?.major || 'Not set',
-    gpa: user?.gpa || 0,
-    graduationYear: user?.graduationYear || 0
+    gpa: user?.gpa || 'N/A', // Display N/A if 0
+    graduationYear: user?.graduationYear || 'N/A'
   };
 
   // Group skills by category if they exist
@@ -86,6 +92,15 @@ export function StudentDashboard() {
             </div>
             <p className="text-sm opacity-60 mt-2">Overall Match Readiness</p>
           </div>
+        </div>
+        
+        {/* Completion Bar */}
+        <div className="mb-8">
+            <div className="flex justify-between text-sm mb-2">
+                <span className="font-semibold">Profile Strength</span>
+                <span>{calculatedReadiness}%</span>
+            </div>
+            <Progress value={calculatedReadiness} className="h-2" />
         </div>
 
         <div className="grid grid-cols-3 gap-6 mb-8">

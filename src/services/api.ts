@@ -184,6 +184,12 @@ export const api = {
     return await response.json();
   },
 
+  async getProfile(userId: string): Promise<any> {
+    const response = await fetch(`${API_Base_URL}/auth/profile?user_id=${userId}`);
+    if (!response.ok) throw new Error('Failed to fetch profile');
+    return await response.json();
+  },
+
   async googleAuth(id_token: string, role?: string): Promise<any> {
     const response = await fetch(`${API_Base_URL}/auth/google`, {
         method: 'POST',

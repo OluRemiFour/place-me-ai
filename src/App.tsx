@@ -25,7 +25,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Toaster } from "@/components/ui/sonner";
 
 import { RequireRole } from "@/components/RequireRole";
-import { ProfileCompletionGuard } from "@/components/auth/ProfileCompletionGuard";
+import { ProfileGuard } from "@/components/auth/ProfileGuard";
 
 function App() {
   const { user, isProfileComplete } = useAuth();
@@ -45,11 +45,11 @@ function App() {
           <Route path="/verify-otp" element={<OTPVerificationPage />} />
         </Route>
         
-        {/* Protected Dashboard Routes */}
+        {/* Protected Dashboard Routes (General) */}
         <Route element={
-          <ProfileCompletionGuard>
+          <ProfileGuard>
             <DashboardLayout />
-          </ProfileCompletionGuard>
+          </ProfileGuard>
         }>
           <Route path="/dashboard" element={
             user?.role === 'student' ? <StudentDashboard /> : <IndustryDashboard />
