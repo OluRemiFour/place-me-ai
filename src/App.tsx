@@ -28,7 +28,7 @@ import { RequireRole } from "@/components/RequireRole";
 import { ProfileGuard } from "@/components/auth/ProfileGuard";
 
 function App() {
-  const { user, isProfileComplete } = useAuth();
+  const { user, isProfileComplete, isVerified } = useAuth(); // Destructure isVerified from context
 
   return (
     <Suspense fallback={<p>Loading...</p>}>
@@ -41,7 +41,9 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          <Route path="/verify-email" element={<VerifyEmailPage />} />
+          <Route path="/verify-email" element={
+            isVerified ? <Navigate to="/dashboard" replace /> : <VerifyEmailPage />
+          } />
           <Route path="/verify-otp" element={<OTPVerificationPage />} />
         </Route>
         

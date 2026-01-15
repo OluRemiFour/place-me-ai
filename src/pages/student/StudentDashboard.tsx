@@ -82,8 +82,12 @@ export function StudentDashboard() {
             <div className="flex flex-wrap gap-3">
               <Badge variant="outline" className="font-mono">{studentProfile.university}</Badge>
               <Badge variant="outline" className="font-mono">{studentProfile.major}</Badge>
-              <Badge variant="outline" className="font-mono">GPA: {studentProfile.gpa}</Badge>
-              <Badge variant="outline" className="font-mono">Class of {studentProfile.graduationYear}</Badge>
+              <Badge variant="outline" className="font-mono">GPA: {studentProfile.gpa !== 'N/A' ? studentProfile.gpa : 'N/A'}</Badge>
+              <Badge variant="outline" className="font-mono">
+                  {studentProfile.graduationYear && studentProfile.graduationYear !== 'N/A' 
+                    ? `Class of ${studentProfile.graduationYear}` 
+                    : 'Class of 202X'}
+              </Badge>
             </div>
           </div>
           <div className="text-right">
