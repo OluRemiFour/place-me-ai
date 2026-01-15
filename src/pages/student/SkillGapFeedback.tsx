@@ -67,8 +67,8 @@ export function SkillGapFeedback() {
             
             // Calculate readiness: 20% profile, 80% skills/actions balance
             const skillMatchScore = matchedCount + missingCount > 0 
-                ? (matchedCount / (matchedCount + missingCount + (actionsCount * 0.3))) * 80 
-                : 0;
+                ? (matchedCount / (matchedCount + missingCount)) * 60 + (Math.max(0, 5 - actionsCount) / 5) * 20
+                : 10;
             
             setAnalysis({
                 missingSkills: result.missing_skills,

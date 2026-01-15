@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { api, Student, Match } from '@/services/api';
+import { toast } from 'sonner';
 
 export function StudentDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -182,7 +183,7 @@ export function StudentDetailPage() {
                    const msg = msgInput.value;
                    
                    if (!msg.trim()) {
-                       alert("Please enter a message.");
+                       toast.error("Please enter a message.");
                        return;
                    }
 
@@ -197,10 +198,10 @@ export function StudentDetailPage() {
                            message: msg,
                            sender_id: "current_user_id" 
                        });
-                       alert("Message Sent!");
+                       toast.success("Message Sent!");
                        msgInput.value = ""; // Clear input
                    } catch (err) {
-                       alert("Failed to send message.");
+                       toast.error("Failed to send message.");
                    } finally {
                        btn.disabled = false;
                        btn.innerText = "Send Email";
@@ -263,7 +264,7 @@ export function StudentDetailPage() {
                         const notes = (document.getElementById('notes') as HTMLTextAreaElement).value;
                         
                         if (!date || !time || !type) {
-                            alert("Please fill in all required fields (Date, Time, Type).");
+                            toast.error("Please fill in all required fields (Date, Time, Type).");
                             return;
                         }
 
@@ -280,9 +281,9 @@ export function StudentDetailPage() {
                                 link,
                                 notes
                             });
-                            alert("Interview Scheduled!");
+                            toast.success("Interview Scheduled!");
                         } catch (err) {
-                            alert("Failed to schedule interview.");
+                            toast.error("Failed to schedule interview.");
                         } finally {
                             btn.disabled = false;
                             btn.innerText = "Confirm Schedule";

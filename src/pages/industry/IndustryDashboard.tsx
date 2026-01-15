@@ -96,7 +96,7 @@ export function IndustryDashboard() {
   );
 
   const handleStudentClick = (studentId: string) => {
-    navigate(`/student/${studentId}`); 
+    navigate(`/students/${studentId}`); 
   };
 
   return (

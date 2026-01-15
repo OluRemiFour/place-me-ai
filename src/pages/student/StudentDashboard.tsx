@@ -5,10 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { useAuth, SkillDetail } from '@/contexts/AuthContext';
-import { api, Match } from '@/services/api';
+import { api, Match, calculateReadinessScore } from '@/services/api';
 
 export function StudentDashboard() {
-  const { user } = useAuth();
+  const { user, isProfileComplete } = useAuth();
   const navigate = useNavigate();
   const [matches, setMatches] = useState<Match[]>([]);
   const [expandedCategories, setExpandedCategories] = useState<string[]>(['Technical Skills']);
@@ -16,9 +16,7 @@ export function StudentDashboard() {
 
   // Calculate Readiness Score dynamically
   const certifiedCount = user?.skills?.filter(s => s.verified).length || 0;
-  const gpaScore = (user?.gpa || 0) * 10;
-  const skillScore = certifiedCount * 15;
-  const calculatedReadiness = Math.min(100, Math.round(gpaScore + skillScore));
+  const calculatedReadiness = calculateReadinessScore(user?.skills, isProfileComplete);
 
   const studentProfile = {
     name: user?.name || 'Student',

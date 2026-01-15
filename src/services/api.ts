@@ -107,6 +107,14 @@ const rolesDB: Role[] = [];
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 // API Functions
+export function calculateReadinessScore(skills: SkillDetail[] = [], isProfileComplete: boolean = false): number {
+  const certifiedCount = skills.filter(s => s.verified).length;
+  const profileBonus = isProfileComplete ? 20 : 5;
+  const skillScore = Math.min(60, (skills.length || 0) * 5);
+  const certificationBonus = certifiedCount * 10;
+  return Math.min(100, profileBonus + skillScore + certificationBonus);
+}
+
 export const api = {
   // Auth
   async login(email: string, password: string): Promise<any> {
@@ -187,7 +195,14 @@ export const api = {
   async getProfile(userId: string): Promise<any> {
     const response = await fetch(`${API_Base_URL}/auth/profile?user_id=${userId}`);
     if (!response.ok) throw new Error('Failed to fetch profile');
-    return await response.json();
+    const data = await response.json();
+    
+    // Map backend fields to frontend interface if they differ
+    if (data.graduation_year !== undefined) {
+        data.graduationYear = data.graduation_year;
+    }
+    
+    return data;
   },
 
   async googleAuth(id_token: string, role?: string): Promise<any> {
@@ -314,15 +329,28 @@ export const api = {
     const response = await fetch(`${API_Base_URL}/students/`);
     if (!response.ok) return [];
     const users = await response.json();
-    return users.map((u: any) => ({
-      id: u.id,
-      name: u.full_name,
-      email: u.email,
-      university: u.university,
-      skills: u.skills,
-      // Map other fields as needed or provide defaults
-      matchScore: 0, certifiedSkills: 0, totalSkills: 0, topSkills: [], location: '', experience: '', major: '', gpa: 0, graduationYear: 0, certifications: [], projects: []
-    }));
+    return users.map((u: any) => {
+      const skills = u.skills || [];
+      const certifiedCount = skills.filter((s: any) => s.verified).length;
+      return {
+        id: u.id,
+        name: u.full_name || u.name,
+        email: u.email,
+        university: u.university || '',
+        major: u.major || '',
+        location: u.location || '',
+        experience: u.experience || 'Entry Level',
+        matchScore: calculateReadinessScore(skills, !!(u.university && u.major)),
+        certifiedSkills: certifiedCount,
+        totalSkills: skills.length,
+        topSkills: skills.slice(0, 3).map((s: any) => s.name),
+        skills: skills,
+        gpa: u.gpa || 0,
+        graduationYear: u.graduation_year || 0,
+        certifications: u.certifications || [],
+        projects: u.projects || []
+      };
+    });
   },
 
   async getStudent(id: string): Promise<Student | null> {
@@ -335,8 +363,8 @@ export const api = {
         const skills = u.skills || [];
         const certifiedCount = skills.filter((s: any) => s.verified).length;
         const totalSkills = skills.length;
-        // Mock match score if not provided (backend might need 'match_score' field in profile)
-        const matchScore = u.match_score || Math.floor(Math.random() * 20) + 75; // Random 75-95 for demo
+        // Unify readiness score
+        const matchScore = calculateReadinessScore(skills, !!(u.university && u.major && u.bio)); 
 
         return {
           id: u.id,
@@ -366,14 +394,28 @@ export const api = {
     const response = await fetch(`${API_Base_URL}/students/search?query=${encodeURIComponent(query)}`);
     if (!response.ok) return [];
     const users = await response.json();
-    return users.map((u: any) => ({
+    return users.map((u: any) => {
+      const skills = u.skills || [];
+      const certifiedCount = skills.filter((s: any) => s.verified).length;
+      return {
         id: u.id,
-        name: u.full_name,
+        name: u.full_name || u.name,
         email: u.email,
-        university: u.university,
-        skills: u.skills,
-        matchScore: 0, certifiedSkills: 0, totalSkills: 0, topSkills: [], location: '', experience: '', major: '', gpa: 0, graduationYear: 0, certifications: [], projects: []
-    }));
+        university: u.university || '',
+        major: u.major || '',
+        location: u.location || '',
+        experience: u.experience || 'Entry Level',
+        matchScore: calculateReadinessScore(skills, !!(u.university && u.major)),
+        certifiedSkills: certifiedCount,
+        totalSkills: skills.length,
+        topSkills: skills.slice(0, 3).map((s: any) => s.name),
+        skills: skills,
+        gpa: u.gpa || 0,
+        graduationYear: u.graduation_year || 0,
+        certifications: u.certifications || [],
+        projects: u.projects || []
+      };
+    });
   },
 
   // Roles
@@ -500,6 +542,20 @@ export const api = {
     } catch (e) {
       console.warn("Backend offline/error", e);
       return { status: "error", message: "Interview scheduling temporarily unavailable" };
+    }
+  },
+
+  async applyForRole(roleId: string, studentId: string, message?: string): Promise<any> {
+    try {
+      const response = await fetch(`${API_Base_URL}/communication/apply`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role_id: roleId, student_id: studentId, message })
+      });
+      return await response.json();
+    } catch (e) {
+      console.warn("Backend offline/error", e);
+      return { status: "error", message: "Application service temporarily unavailable" };
     }
   }
 };

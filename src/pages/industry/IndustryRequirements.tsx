@@ -29,7 +29,7 @@ export function IndustryRequirements() {
   // Form State for New Role
   const [newRoleForm, setNewRoleForm] = useState<Partial<Role>>({
       title: '',
-      company: 'My Company', 
+      company: user.role === 'industry' ? user.company_name || 'My Company' : 'Company', 
       seniority: 'Mid-Level',
       industry: 'Technology',
       requiredSkills: [],
@@ -40,6 +40,8 @@ export function IndustryRequirements() {
   });
   const [newSkillInput, setNewSkillInput] = useState('');
   const [isPublishing, setIsPublishing] = useState(false);
+  const [applicationMessage, setApplicationMessage] = useState('');
+  const [isApplying, setIsApplying] = useState(false);
 
   useEffect(() => {
     loadRoles();
@@ -93,6 +95,22 @@ export function IndustryRequirements() {
               ...prev,
               preferredSkills: prev.preferredSkills?.filter(s => s !== skillToRemove)
           }));
+      }
+  };
+
+  const handleApply = async () => {
+      if (!selectedRole) return;
+      setIsApplying(true);
+      try {
+          await api.applyForRole(selectedRole.id, user.id, applicationMessage);
+          toast.success("Application submitted successfully!");
+          setSelectedRole(null);
+          setApplicationMessage('');
+      } catch (error) {
+          console.error("Failed to apply", error);
+          toast.error("Failed to submit application.");
+      } finally {
+          setIsApplying(false);
       }
   };
 
@@ -427,28 +445,51 @@ export function IndustryRequirements() {
                   </div>
 
                  <div className="pt-4 space-y-3">
-                   <Button 
-                     className="w-full h-12 text-base font-semibold group"
-                     onClick={() => {
-                       setSelectedRole(null);
-                       navigate('/matches');
-                     }}
-                   >
-                     Find Matching Candidates
-                     <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
-                   </Button>
-                   <Button 
-                     variant="outline" 
-                     className="w-full h-12 text-base font-semibold border-black"
-                     onClick={() => {
-                        // Logic to close/delete placement
-                         toast.success("Placement closed for " + selectedRole.title);
-                         setRoles(roles.filter(r => r.id !== selectedRole.id));
-                         setSelectedRole(null);
-                     }}
-                   >
-                     Close / Delete Placement
-                   </Button>
+                   {user?.role?.toLowerCase().trim() === 'industry' ? (
+                     <>
+                       <Button 
+                         className="w-full h-12 text-base font-semibold group"
+                         onClick={() => {
+                           setSelectedRole(null);
+                           navigate('/matches');
+                         }}
+                       >
+                         Find Matching Candidates
+                         <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+                       </Button>
+                       <Button 
+                         variant="outline" 
+                         className="w-full h-12 text-base font-semibold border-black"
+                         onClick={() => {
+                            // Logic to close/delete placement
+                             toast.success("Placement closed for " + selectedRole.title);
+                             setRoles(roles.filter(r => r.id !== selectedRole.id));
+                             setSelectedRole(null);
+                         }}
+                       >
+                         Close / Delete Placement
+                       </Button>
+                     </>
+                   ) : (
+                     <div className="space-y-4">
+                        <div className="space-y-2">
+                           <label className="text-sm font-medium opacity-60">ADD A MESSAGE (OPTIONAL)</label>
+                           <Textarea 
+                              placeholder="Tell the recruiter why you're a great fit..." 
+                              value={applicationMessage}
+                              onChange={(e) => setApplicationMessage(e.target.value)}
+                              className="min-h-[100px]"
+                           />
+                        </div>
+                        <Button 
+                          className="w-full h-12 text-base font-semibold"
+                          onClick={handleApply}
+                          disabled={isApplying}
+                        >
+                          {isApplying ? 'Submitting...' : 'Apply for this Role'}
+                        </Button>
+                     </div>
+                   )}
                  </div>
                 </div>
               )}
