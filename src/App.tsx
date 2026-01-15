@@ -90,6 +90,11 @@ function App() {
               <InternshipsPage />
             </RequireRole>
           } />
+          <Route path="/roles" element={
+            <RequireRole allowedRoles={['student']}>
+              <IndustryRequirements />
+            </RequireRole>
+          } />
           
           {/* Industry Specific Routes */}
           <Route path="/industry-dashboard" element={

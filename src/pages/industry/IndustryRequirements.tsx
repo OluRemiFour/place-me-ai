@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, ArrowRight } from 'lucide-react';
+import { Search, ArrowRight, Plus, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -22,19 +23,35 @@ export function IndustryRequirements() {
   const [roles, setRoles] = useState<Role[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Form State for New Role
+  const [newRoleForm, setNewRoleForm] = useState<Partial<Role>>({
+      title: '',
+      company: 'My Company', // Ideally fetched from user profile
+      seniority: 'Mid-Level',
+      industry: 'Technology',
+      requiredSkills: [],
+      preferredSkills: [],
+      experience: '0-2 years',
+      location: 'Remote',
+      description: ''
+  });
+  const [newSkillInput, setNewSkillInput] = useState('');
+  const [isPublishing, setIsPublishing] = useState(false);
+
   useEffect(() => {
-    const loadRoles = async () => {
-      try {
-        const data = await api.getRoles();
-        setRoles(data);
-      } catch (error) {
-        console.error('Failed to load roles:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
     loadRoles();
   }, []);
+
+  const loadRoles = async () => {
+    try {
+      const data = await api.getRoles();
+      setRoles(data);
+    } catch (error) {
+      console.error('Failed to load roles:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const industries = ['all', ...new Set(roles.map(r => r.industry))];
 
@@ -44,6 +61,82 @@ export function IndustryRequirements() {
     const matchesIndustry = industryFilter === 'all' || role.industry === industryFilter;
     return matchesSearch && matchesIndustry;
   });
+
+  const handleAddSkill = (type: 'required' | 'preferred') => {
+      if (!newSkillInput.trim()) return;
+      
+      if (type === 'required') {
+          setNewRoleForm(prev => ({
+              ...prev,
+              requiredSkills: [...(prev.requiredSkills || []), newSkillInput.trim()]
+          }));
+      } else {
+          setNewRoleForm(prev => ({
+              ...prev,
+              preferredSkills: [...(prev.preferredSkills || []), newSkillInput.trim()]
+          }));
+      }
+      setNewSkillInput('');
+  };
+
+  const removeSkill = (skillToRemove: string, type: 'required' | 'preferred') => {
+      if (type === 'required') {
+          setNewRoleForm(prev => ({
+              ...prev,
+              requiredSkills: prev.requiredSkills?.filter(s => s !== skillToRemove)
+          }));
+      } else {
+          setNewRoleForm(prev => ({
+              ...prev,
+              preferredSkills: prev.preferredSkills?.filter(s => s !== skillToRemove)
+          }));
+      }
+  };
+
+  const handlePublish = async () => {
+      setIsPublishing(true);
+      try {
+          // Map to backend schema expectation
+          const rolePayload = {
+              title: newRoleForm.title,
+              company_name: newRoleForm.company,
+              recruiter_id: 'current_user_id', // In real auth, backend handles this
+              description: newRoleForm.description,
+              requirements: [], // Legacy field, can be mapped from description or skills
+              role_type: 'full_time', // Defaulting for now
+              location: newRoleForm.location,
+              is_active: true,
+              required_skills: newRoleForm.requiredSkills,
+              preferred_skills: newRoleForm.preferredSkills,
+              min_experience_years: parseInt(newRoleForm.experience?.split('-')[0] || '0'), 
+              seniority: newRoleForm.seniority,
+              industry: newRoleForm.industry,
+              experience: newRoleForm.experience
+          };
+
+          await api.createRole(rolePayload);
+          await loadRoles();
+          setSelectedRole(null);
+          // Reset form
+          setNewRoleForm({
+            title: '',
+            company: 'My Company',
+            seniority: 'Mid-Level',
+            industry: 'Technology',
+            requiredSkills: [],
+            preferredSkills: [],
+            experience: '0-2 years',
+            location: 'Remote',
+            description: ''
+          });
+      } catch (error) {
+          console.error("Failed to publish role", error);
+          alert("Failed to publish role. Please try again.");
+      } finally {
+          setIsPublishing(false);
+      }
+  };
+
 
   if (isLoading) {
     return (
@@ -64,7 +157,18 @@ export function IndustryRequirements() {
           {roles.length} active role requirements · Updated daily
         </p>
         <div className="mt-4">
-          <Button onClick={() => setSelectedRole({ id: 'new', title: 'New Role', company: 'Company', seniority: 'Junior', industry: 'Tech', requiredSkills: [], preferredSkills: [], experience: '0', location: 'Remote', description: '' })} className="group">
+          <Button onClick={() => setSelectedRole({ 
+              id: 'new', 
+              title: 'New Role', 
+              company: 'Company', 
+              seniority: 'Junior', 
+              industry: 'Tech', 
+              requiredSkills: [], 
+              preferredSkills: [], 
+              experience: '0', 
+              location: 'Remote', 
+              description: '' 
+           } as Role)} className="group">
              Post New Requirement
              <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
           </Button>
@@ -151,29 +255,106 @@ export function IndustryRequirements() {
                  <div className="mt-8 space-y-6">
                     <div className="space-y-2">
                         <label className="text-sm font-medium">Role Title</label>
-                        <Input placeholder="e.g. Senior Frontend Developer" />
+                        <Input 
+                            placeholder="e.g. Senior Frontend Developer" 
+                            value={newRoleForm.title}
+                            onChange={(e) => setNewRoleForm({...newRoleForm, title: e.target.value})}
+                        />
                     </div>
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium">Industry</label>
-                         <Select defaultValue="Technology">
-                          <SelectTrigger><SelectValue /></SelectTrigger>
-                          <SelectContent>
-                              <SelectItem value="Technology">Technology</SelectItem>
-                              <SelectItem value="Finance">Finance</SelectItem>
-                              <SelectItem value="Healthcare">Healthcare</SelectItem>
-                          </SelectContent>
-                        </Select>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">Industry</label>
+                             <Select value={newRoleForm.industry} onValueChange={(v) => setNewRoleForm({...newRoleForm, industry: v})}>
+                              <SelectTrigger><SelectValue /></SelectTrigger>
+                              <SelectContent>
+                                  <SelectItem value="Technology">Technology</SelectItem>
+                                  <SelectItem value="Finance">Finance</SelectItem>
+                                  <SelectItem value="Healthcare">Healthcare</SelectItem>
+                                  <SelectItem value="Manufacturing">Manufacturing</SelectItem>
+                                  <SelectItem value="Education">Education</SelectItem>
+                              </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">Seniority</label>
+                             <Select value={newRoleForm.seniority} onValueChange={(v) => setNewRoleForm({...newRoleForm, seniority: v})}>
+                              <SelectTrigger><SelectValue /></SelectTrigger>
+                              <SelectContent>
+                                  <SelectItem value="Intern">Intern</SelectItem>
+                                  <SelectItem value="Junior">Junior</SelectItem>
+                                  <SelectItem value="Mid-Level">Mid-Level</SelectItem>
+                                  <SelectItem value="Senior">Senior</SelectItem>
+                                  <SelectItem value="Lead">Lead</SelectItem>
+                              </SelectContent>
+                            </Select>
+                        </div>
                     </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                             <label className="text-sm font-medium">Experience</label>
+                             <Select value={newRoleForm.experience} onValueChange={(v) => setNewRoleForm({...newRoleForm, experience: v})}>
+                              <SelectTrigger><SelectValue /></SelectTrigger>
+                              <SelectContent>
+                                  <SelectItem value="0-1 years">0-1 years</SelectItem>
+                                  <SelectItem value="1-3 years">1-3 years</SelectItem>
+                                  <SelectItem value="3-5 years">3-5 years</SelectItem>
+                                  <SelectItem value="5+ years">5+ years</SelectItem>
+                              </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                             <label className="text-sm font-medium">Location</label>
+                             <Input 
+                                value={newRoleForm.location}
+                                onChange={(e) => setNewRoleForm({...newRoleForm, location: e.target.value})}
+                                placeholder="e.g. Remote, New York, NY"
+                             />
+                        </div>
+                    </div>
+
+                    {/* Skills Section */}
+                    <div className="space-y-4 border-t border-b py-4">
+                        <label className="text-sm font-medium">Required Skills</label>
+                        <div className="flex gap-2">
+                            <Input 
+                                value={newSkillInput}
+                                onChange={(e) => setNewSkillInput(e.target.value)}
+                                placeholder="Add a skill (e.g. React, Python)"
+                                onKeyDown={(e) => {
+                                    if(e.key === 'Enter') {
+                                        e.preventDefault();
+                                        handleAddSkill('required');
+                                    }
+                                }}
+                            />
+                            <Button onClick={() => handleAddSkill('required')} size="sm" variant="outline">
+                                <Plus className="h-4 w-4" />
+                            </Button>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                            {newRoleForm.requiredSkills?.map(s => (
+                                <Badge key={s} variant="secondary" className="pl-2 pr-1 py-1 flex items-center gap-1">
+                                    {s}
+                                    <X className="h-3 w-3 cursor-pointer hover:text-red-500" onClick={() => removeSkill(s, 'required')}/>
+                                </Badge>
+                            ))}
+                        </div>
+                    </div>
+
                     <div className="space-y-2">
                         <label className="text-sm font-medium">Description</label>
-                        <Input className="h-20" placeholder="Role description..." />
+                        <Textarea 
+                            className="min-h-[120px]" 
+                            placeholder="Detailed role description..." 
+                            value={newRoleForm.description}
+                            onChange={(e) => setNewRoleForm({...newRoleForm, description: e.target.value})}
+                        />
                     </div>
-                    <Button className="w-full h-12" onClick={() => {
-                        // In real app, post to API
-                        setRoles([...roles, { ...selectedRole, id: String(Date.now()), title: 'New Role (Mock)', company: 'My Company', created_at: new Date().toISOString() } as Role]);
-                        setSelectedRole(null);
-                    }}>
-                        Publish Requirement
+
+                    <Button className="w-full h-12" onClick={handlePublish} disabled={isPublishing}>
+                        {isPublishing ? 'Publishing...' : 'Publish Requirement'}
                     </Button>
                  </div>
               ) : (
@@ -221,6 +402,11 @@ export function IndustryRequirements() {
                         </Badge>
                       ))}
                     </div>
+                  </div>
+                  
+                  <div className="mt-4">
+                     <h4 className="text-sm font-semibold mb-3 opacity-60">DESCRIPTION</h4>
+                     <p className="text-sm leading-relaxed whitespace-pre-line">{selectedRole.description}</p>
                   </div>
 
                  <div className="pt-4 space-y-3">

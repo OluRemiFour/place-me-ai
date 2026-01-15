@@ -104,7 +104,7 @@ export function StudentDashboard() {
         </div>
 
         <div className="flex gap-3">
-          <Link to="/matches" className="flex-1">
+          <Link to="/roles" className="flex-1">
             <Button className="w-full h-12 text-base font-semibold group">
               <Target className="mr-2 h-5 w-5" />
               Find Matching Roles
@@ -174,7 +174,7 @@ export function StudentDashboard() {
         <div>
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-bold">Top Role Matches</h3>
-            <Link to="/matches">
+            <Link to="/roles">
               <Button variant="outline" size="sm" className="border-black">
                 View All
                 <ArrowRight className="ml-2 h-4 w-4" />

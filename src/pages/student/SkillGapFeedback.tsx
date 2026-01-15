@@ -67,7 +67,7 @@ export function SkillGapFeedback() {
 
   const missingSkills = analysis?.missingSkills || [];
   const skillsToImprove = analysis?.skillsToImprove || [];
-  const overallReadiness = analysis?.overallReadiness || 78;
+  const overallReadiness = analysis?.overallReadiness || 0;
   const recommendedActions = analysis?.recommendedActions || [];
 
   const totalEstimatedTime = `${Math.ceil(skillsToImprove.length * 6)}-${Math.ceil(skillsToImprove.length * 8)} weeks`;

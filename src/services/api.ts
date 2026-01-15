@@ -328,11 +328,11 @@ export const api = {
         id: r.id,
         title: r.title,
         company: r.company_name,
-        seniority: 'Mid-Level', // Default
-        industry: 'Technology', // Default
-        requiredSkills: r.required_skills,
-        preferredSkills: [],
-        experience: `${r.min_experience_years} years`,
+        seniority: r.seniority || 'Mid-Level',
+        industry: r.industry || 'Technology',
+        requiredSkills: r.required_skills || [],
+        preferredSkills: r.preferred_skills || [],
+        experience: r.experience || `${r.min_experience_years} years`,
         location: r.location,
         salary: r.salary_range,
         description: r.description

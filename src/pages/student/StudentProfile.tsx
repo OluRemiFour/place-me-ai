@@ -107,7 +107,7 @@ export function StudentProfile() {
         </div>
 
         <div className="flex gap-3">
-          <Link to="/matches" className="flex-1">
+          <Link to="/roles" className="flex-1">
             <Button className="w-full h-12 text-base font-semibold">
               Find Matching Roles
             </Button>
