@@ -41,10 +41,10 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          <Route path="/verify-email" element={
+          {/* <Route path="/verify-email" element={
             isVerified ? <Navigate to="/dashboard" replace /> : <VerifyEmailPage />
           } />
-          <Route path="/verify-otp" element={<OTPVerificationPage />} />
+          <Route path="/verify-otp" element={<OTPVerificationPage />} /> */}
         </Route>
         
         {/* Protected Dashboard Routes (General) */}

@@ -44,8 +44,8 @@ interface AuthContextType {
   login: (email: string, password: string, role: UserRole) => Promise<void>;
   register: (email: string, password: string, name: string, role: UserRole, confirmPassword?: string) => Promise<void>;
   logout: () => void;
-  verifyOTP: (otp: string) => Promise<void>;
-  resendOTP: () => Promise<void>;
+  // verifyOTP: (otp: string) => Promise<void>;
+  // resendOTP: () => Promise<void>;
   checkProfileStatus: () => Promise<void>;
   refreshUser: () => Promise<void>;
   googleLogin: (idToken: string, role: UserRole) => Promise<void>;
@@ -153,17 +153,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const verifyOTP = async (otp: string) => {
-    if (!user) throw new Error("No user logged in");
-    await api.verifyOTP(user.email, otp);
-    setIsVerified(true);
-    localStorage.setItem('skillsync_verified', 'true');
-  };
+  // const verifyOTP = async (otp: string) => {
+  //   if (!user) throw new Error("No user logged in");
+  //   await api.verifyOTP(user.email, otp);
+  //   setIsVerified(true);
+  //   localStorage.setItem('skillsync_verified', 'true');
+  // };
 
-  const resendOTP = async () => {
-    if (!user) throw new Error("No user logged in");
-    await api.sendOTP(user.email);
-  };
+  // const resendOTP = async () => {
+  //   if (!user) throw new Error("No user logged in");
+  //   await api.sendOTP(user.email);
+  // };
 
   const checkProfileStatus = async () => {
     if (user) await checkStatus(user.id);
@@ -238,9 +238,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       missingFields,
       login,
       register,
+      register,
       logout,
-      verifyOTP,
-      resendOTP,
+      // verifyOTP,
+      // resendOTP,
       checkProfileStatus,
       refreshUser,
       googleLogin,
