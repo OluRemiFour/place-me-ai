@@ -26,9 +26,9 @@ export function ProfileGuard() {
   // Also allow Industry users to access dashboard and roles to see/manage requirements
   const normalize = (r: string | null) => r?.toLowerCase().trim();
   const userRole = normalize(user?.role || null);
-  const isAllowedIndustryRoute = userRole === 'industry' && (location.pathname === '/industry-dashboard' || location.pathname === '/roles');
+  const isAllowedRoute = location.pathname.includes('/settings') || location.pathname === '/roles';
   
-  if (!isProfileComplete && !location.pathname.includes('/settings') && !isAllowedIndustryRoute) {
+  if (!isProfileComplete && !isAllowedRoute && !isAllowedIndustryRoute) {
     toast.warning("Please complete your profile to access all features.");
     return <Navigate to="/settings" replace />;
   }

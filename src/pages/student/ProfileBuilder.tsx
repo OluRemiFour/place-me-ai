@@ -21,6 +21,8 @@ interface Skill {
   name: string;
   level: number;
   category: string;
+  verification_url?: string;
+  certification_name?: string;
 }
 
 interface Education {
@@ -82,7 +84,13 @@ export function ProfileBuilder() {
   })) || [];
 
   const [skills, setSkills] = useState<Skill[]>(initialSkills);
-  const [newSkill, setNewSkill] = useState({ name: '', level: 50, category: 'Technical' });
+  const [newSkill, setNewSkill] = useState<Skill>({ 
+    name: '', 
+    level: 50, 
+    category: 'Technical',
+    verification_url: '',
+    certification_name: ''
+  });
 
   const [certifications, setCertifications] = useState<Certification[]>([]);
   const [newCert, setNewCert] = useState({ title: '', issuer: '', year: '' });
@@ -130,7 +138,13 @@ export function ProfileBuilder() {
   const addSkill = () => {
     if (newSkill.name) {
       setSkills([...skills, newSkill]);
-      setNewSkill({ name: '', level: 50, category: 'Technical' });
+      setNewSkill({ 
+        name: '', 
+        level: 50, 
+        category: 'Technical',
+        verification_url: '',
+        certification_name: ''
+      });
     }
   };
 
@@ -164,7 +178,9 @@ export function ProfileBuilder() {
         skills: skills.map(s => ({
             name: s.name,
             level: s.level,
-            category: s.category
+            category: s.category,
+            verification_url: s.verification_url,
+            certification_name: s.certification_name
         }))
       };
 
@@ -444,6 +460,28 @@ export function ProfileBuilder() {
                 </div>
                 <input type="range" min="10" max="100" value={newSkill.level} onChange={(e) => setNewSkill({ ...newSkill, level: parseInt(e.target.value) })} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-black" />
               </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Certification Name (Optional)</Label>
+                  <Input 
+                    value={newSkill.certification_name} 
+                    onChange={(e) => setNewSkill({ ...newSkill, certification_name: e.target.value })} 
+                    className="h-10" 
+                    placeholder="e.g. AWS Certified Developer" 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Verification Link (Optional)</Label>
+                  <Input 
+                    value={newSkill.verification_url} 
+                    onChange={(e) => setNewSkill({ ...newSkill, verification_url: e.target.value })} 
+                    className="h-10" 
+                    placeholder="e.g. https://credly.com/..." 
+                  />
+                </div>
+              </div>
+
               <Button onClick={addSkill} className="w-full h-10">
                 <Plus className="h-4 w-4 mr-2" />
                 Add Skill
@@ -459,8 +497,14 @@ export function ProfileBuilder() {
                       <div className="flex items-center gap-2 mb-1">
                         <span className="font-medium">{skill.name}</span>
                         <Badge variant="outline" className="text-xs">{skill.category}</Badge>
+                        {skill.verification_url && (
+                          <Badge variant="secondary" className="text-[10px] bg-green-50 text-green-700 border-green-200">Verified</Badge>
+                        )}
                       </div>
                       <Progress value={skill.level} className="h-1.5" />
+                      {skill.certification_name && (
+                        <p className="text-[10px] opacity-60 mt-1 italic">{skill.certification_name}</p>
+                      )}
                     </div>
                     <div className="flex items-center gap-4 ml-4">
                       <span className="font-mono text-sm font-bold">{skill.level}%</span>
