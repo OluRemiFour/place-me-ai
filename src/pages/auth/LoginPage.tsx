@@ -70,8 +70,8 @@ export function LoginPage() {
       </div>
 
       {/* Left Panel - Form */}
-      <div className="relative z-10 flex-1 flex items-center justify-center p-6 sm:p-12 lg:p-24 bg-white/80 backdrop-blur-sm lg:bg-white">
-        <div className="w-full max-w-md space-y-10">
+      <div className="relative z-10 flex-1 flex items-center justify-center p-4 sm:p-8 lg:p-24 bg-white/80 backdrop-blur-sm lg:bg-white overflow-y-auto">
+        <div className="w-full max-w-md space-y-8 py-8">
           <div className="">
             <Link to="/" className="text-2xl font-bold tracking-tight inline-block hover:opacity-80 transition-opacity">
               SkillSync

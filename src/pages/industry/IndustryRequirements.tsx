@@ -29,7 +29,7 @@ export function IndustryRequirements() {
   // Form State for New Role
   const [newRoleForm, setNewRoleForm] = useState<Partial<Role>>({
       title: '',
-      company: user.role === 'industry' ? user.company_name || 'My Company' : 'Company', 
+      company: user?.company_name || 'My Company', 
       seniority: 'Mid-Level',
       industry: 'Technology',
       requiredSkills: [],
@@ -42,10 +42,23 @@ export function IndustryRequirements() {
   const [isPublishing, setIsPublishing] = useState(false);
   const [applicationMessage, setApplicationMessage] = useState('');
   const [isApplying, setIsApplying] = useState(false);
+  const [userApplications, setUserApplications] = useState<any[]>([]);
 
   useEffect(() => {
     loadRoles();
+    if (user?.role === 'student' && user?.id) {
+        loadUserApplications();
+    }
   }, []);
+
+  const loadUserApplications = async () => {
+    try {
+        const apps = await api.getStudentApplications(user.id);
+        setUserApplications(apps);
+    } catch (error) {
+        console.error("Failed to load user applications", error);
+    }
+  };
 
   const loadRoles = async () => {
     try {
@@ -106,6 +119,7 @@ export function IndustryRequirements() {
           toast.success("Application submitted successfully!");
           setSelectedRole(null);
           setApplicationMessage('');
+          loadUserApplications(); // Refresh applications list
       } catch (error) {
           console.error("Failed to apply", error);
           toast.error("Failed to submit application.");
@@ -121,10 +135,10 @@ export function IndustryRequirements() {
           const rolePayload = {
               title: newRoleForm.title,
               company_name: newRoleForm.company,
-              recruiter_id: 'current_user_id', // In real auth, backend handles this
+              recruiter_id: 'current_user_id', 
               description: newRoleForm.description,
-              requirements: [], // Legacy field, can be mapped from description or skills
-              role_type: 'full_time', // Defaulting for now
+              requirements: [], 
+              role_type: 'full_time', 
               location: newRoleForm.location,
               is_active: true,
               required_skills: newRoleForm.requiredSkills,
@@ -418,7 +432,7 @@ export function IndustryRequirements() {
                   </div>
 
                   <div>
-                    <h4 className="text-sm font-semibold mb-3 opacity-60">REQUIRED SKILLS</h4>
+                    <h4 className="text-sm font-semibold mb-2 opacity-60">REQUIRED SKILLS</h4>
                     <div className="flex flex-wrap gap-2">
                       {selectedRole.requiredSkills.map((skill) => (
                         <Badge key={skill} variant="default" className="text-sm">
@@ -429,7 +443,7 @@ export function IndustryRequirements() {
                   </div>
 
                   <div>
-                    <h4 className="text-sm font-semibold mb-3 opacity-60">PREFERRED SKILLS</h4>
+                    <h4 className="text-sm font-semibold mb-2 opacity-60">PREFERRED SKILLS</h4>
                     <div className="flex flex-wrap gap-2">
                       {selectedRole.preferredSkills.map((skill) => (
                         <Badge key={skill} variant="outline" className="text-sm">
@@ -439,12 +453,12 @@ export function IndustryRequirements() {
                     </div>
                   </div>
                   
-                  <div className="mt-4">
+                  <div className="mt-2">
                      <h4 className="text-sm font-semibold mb-3 opacity-60">DESCRIPTION</h4>
                      <p className="text-sm leading-relaxed whitespace-pre-line">{selectedRole.description}</p>
                   </div>
 
-                 <div className="pt-4 space-y-3">
+                 <div className="pt-2 space-y-3">
                    {user?.role?.toLowerCase().trim() === 'industry' ? (
                      <>
                        <Button 
@@ -481,13 +495,17 @@ export function IndustryRequirements() {
                               className="min-h-[100px]"
                            />
                         </div>
-                        <Button 
-                          className="w-full h-12 text-base font-semibold"
-                          onClick={handleApply}
-                          disabled={isApplying}
-                        >
-                          {isApplying ? 'Submitting...' : 'Apply for this Role'}
-                        </Button>
+                         <Button 
+                           className="w-full h-12 text-base font-semibold"
+                           onClick={handleApply}
+                           disabled={isApplying || userApplications.some(app => app.role_id === selectedRole.id)}
+                         >
+                           {isApplying 
+                            ? 'Submitting...' 
+                            : userApplications.some(app => app.role_id === selectedRole.id) 
+                                ? 'Applied' 
+                                : 'Apply for this Role'}
+                         </Button>
                      </div>
                    )}
                  </div>

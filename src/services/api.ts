@@ -108,11 +108,17 @@ const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 // API Functions
 export function calculateReadinessScore(skills: SkillDetail[] = [], isProfileComplete: boolean = false): number {
+  if (!skills || skills.length === 0) return isProfileComplete ? 20 : 10;
+  
   const certifiedCount = skills.filter(s => s.verified).length;
-  const profileBonus = isProfileComplete ? 20 : 5;
-  const skillScore = Math.min(60, (skills.length || 0) * 5);
-  const certificationBonus = certifiedCount * 10;
-  return Math.min(100, profileBonus + skillScore + certificationBonus);
+  // Base score for having skills
+  const baseSkillScore = Math.min(40, skills.length * 4);
+  // Bonus for verified skills
+  const verificationBonus = Math.min(40, certifiedCount * 8);
+  // Bonus for profile completion
+  const profileBonus = isProfileComplete ? 20 : 0;
+  
+  return Math.min(100, baseSkillScore + verificationBonus + profileBonus);
 }
 
 export const api = {
@@ -556,6 +562,17 @@ export const api = {
     } catch (e) {
       console.warn("Backend offline/error", e);
       return { status: "error", message: "Application service temporarily unavailable" };
+    }
+  },
+
+  async getStudentApplications(studentId: string): Promise<any[]> {
+    try {
+      const response = await fetch(`${API_Base_URL}/communication/applications/student/${studentId}`);
+      if (!response.ok) return [];
+      return await response.json();
+    } catch (e) {
+      console.warn("Failed to fetch student applications", e);
+      return [];
     }
   }
 };
