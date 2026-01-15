@@ -27,6 +27,7 @@ export function ProfileGuard() {
   const normalize = (r: string | null) => r?.toLowerCase().trim();
   const userRole = normalize(user?.role || null);
   const isAllowedRoute = location.pathname.includes('/settings') || location.pathname === '/roles';
+  const isAllowedIndustryRoute = userRole === 'industry' && location.pathname.includes('/industry-dashboard');
   
   if (!isProfileComplete && !isAllowedRoute && !isAllowedIndustryRoute) {
     toast.warning("Please complete your profile to access all features.");

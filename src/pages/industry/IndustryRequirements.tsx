@@ -278,6 +278,7 @@ export function IndustryRequirements() {
                                   <SelectItem value="Healthcare">Healthcare</SelectItem>
                                   <SelectItem value="Manufacturing">Manufacturing</SelectItem>
                                   <SelectItem value="Education">Education</SelectItem>
+                                  <SelectItem value="Other">Other</SelectItem>
                               </SelectContent>
                             </Select>
                         </div>

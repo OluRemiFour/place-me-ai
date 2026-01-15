@@ -57,9 +57,9 @@ export function ProfileBuilder() {
     firstName: user?.name?.split(' ')[0] || '',
     lastName: user?.name?.split(' ')[1] || '',
     email: user?.email || '',
-    phone: '',
-    location: '',
-    bio: ''
+    phone: user?.phone || '',
+    location: user?.location || '',
+    bio: user?.bio || ''
   });
 
   const [education, setEducation] = useState<Education[]>([
@@ -472,7 +472,7 @@ export function ProfileBuilder() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Verification Link (Optional)</Label>
+                  <Label>Certification Link (Optional)</Label>
                   <Input 
                     value={newSkill.verification_url} 
                     onChange={(e) => setNewSkill({ ...newSkill, verification_url: e.target.value })} 
@@ -498,7 +498,7 @@ export function ProfileBuilder() {
                         <span className="font-medium">{skill.name}</span>
                         <Badge variant="outline" className="text-xs">{skill.category}</Badge>
                         {skill.verification_url && (
-                          <Badge variant="secondary" className="text-[10px] bg-green-50 text-green-700 border-green-200">Verified</Badge>
+                          <Badge variant="secondary" className="text-[10px] bg-green-50 text-green-700 border-green-200">Certified</Badge>
                         )}
                       </div>
                       <Progress value={skill.level} className="h-1.5" />

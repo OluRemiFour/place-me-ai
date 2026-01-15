@@ -18,6 +18,7 @@ interface User {
   role: UserRole;
   avatar?: string;
   token?: string;
+  phone?: string;
   bio?: string;
   location?: string;
   

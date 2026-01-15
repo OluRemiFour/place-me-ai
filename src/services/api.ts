@@ -6,7 +6,7 @@ export interface Student {
   name: string;
   email: string;
   matchScore: number;
-  verifiedSkills: number;
+  certifiedSkills: number;
   totalSkills: number;
   topSkills: string[];
   location: string;
@@ -205,7 +205,7 @@ export const api = {
 
   async analyzeSkillGap(currentSkills: string[], targetRole: string, major: string): Promise<any> {
     try {
-        const response = await fetch(`${API_Base_URL}/skills/analyze`, {
+        const response = await fetch(`${API_Base_URL}/skills/gap-analysis`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ current_skills: currentSkills, target_role: targetRole, major })
@@ -321,7 +321,7 @@ export const api = {
       university: u.university,
       skills: u.skills,
       // Map other fields as needed or provide defaults
-      matchScore: 0, verifiedSkills: 0, totalSkills: 0, topSkills: [], location: '', experience: '', major: '', gpa: 0, graduationYear: 0, certifications: [], projects: []
+      matchScore: 0, certifiedSkills: 0, totalSkills: 0, topSkills: [], location: '', experience: '', major: '', gpa: 0, graduationYear: 0, certifications: [], projects: []
     }));
   },
 
@@ -333,7 +333,7 @@ export const api = {
         
         // Calculate derived stats
         const skills = u.skills || [];
-        const verifiedCount = skills.filter((s: any) => s.verified).length;
+        const certifiedCount = skills.filter((s: any) => s.verified).length;
         const totalSkills = skills.length;
         // Mock match score if not provided (backend might need 'match_score' field in profile)
         const matchScore = u.match_score || Math.floor(Math.random() * 20) + 75; // Random 75-95 for demo
@@ -350,7 +350,7 @@ export const api = {
           experience: u.experience || 'No experience listed',
           skills: skills,
           matchScore: matchScore, 
-          verifiedSkills: verifiedCount, 
+          certifiedSkills: certifiedCount, 
           totalSkills: totalSkills, 
           topSkills: skills.slice(0, 5).map((s: any) => s.name),
           certifications: u.certifications || [],
@@ -372,7 +372,7 @@ export const api = {
         email: u.email,
         university: u.university,
         skills: u.skills,
-        matchScore: 0, verifiedSkills: 0, totalSkills: 0, topSkills: [], location: '', experience: '', major: '', gpa: 0, graduationYear: 0, certifications: [], projects: []
+        matchScore: 0, certifiedSkills: 0, totalSkills: 0, topSkills: [], location: '', experience: '', major: '', gpa: 0, graduationYear: 0, certifications: [], projects: []
     }));
   },
 
@@ -449,26 +449,6 @@ export const api = {
   },
 
 
-  // Skill Gap Analysis
-  async getSkillGapAnalysis(studentId: string, roleId: string): Promise<{
-    missingSkills: string[];
-    skillsToImprove: SkillGap[];
-    overallReadiness: number;
-    recommendedActions: Array<{
-      title: string;
-      description: string;
-      duration: string;
-      priority: 'high' | 'medium' | 'low';
-    }>;
-  }> {
-    // In actual app, fetch from backend. For now, since mock DBs are empty, return empty stats.
-    return {
-      missingSkills: [],
-      skillsToImprove: [],
-      overallReadiness: 0,
-      recommendedActions: []
-    };
-  },
 
   // Statistics
   async getSkillStatistics(): Promise<SkillStatistics[]> {
@@ -476,27 +456,23 @@ export const api = {
     return [];
   },
 
-  async getDashboardMetrics(): Promise<{
-    totalStudents: number;
-    activeRoles: number;
-    matchesThisWeek: number;
-    avgMatchScore: number;
-    topSkills: { skill: string; demand: number }[];
-    recentMatches: { student: string; role: string; score: number; company: string }[];
-    matchTrend: { date: string; matches: number }[];
-    skillDistribution: { category: string; count: number }[];
-  }> {
-    // Return zeros until backend implemented
-    return {
-      totalStudents: 0,
-      activeRoles: 0,
-      matchesThisWeek: 0,
-      avgMatchScore: 0,
-      topSkills: [],
-      recentMatches: [],
-      matchTrend: [],
-      skillDistribution: []
-    };
+  async getDashboardMetrics(): Promise<any> {
+    const response = await fetch(`${API_Base_URL}/industry/dashboard-metrics`);
+    if (!response.ok) {
+        return {
+          totalStudents: 0,
+          activeRoles: 0,
+          matchesThisWeek: 0,
+          avgMatchScore: 0,
+          topSkills: [],
+          recentMatches: [],
+          matchTrend: [],
+          skillDistribution: [],
+          hiringPipeline: { applied: 0, message: 0, interviewing: 0, offers: 0 },
+          recentActivity: []
+        };
+    }
+    return await response.json();
   },
 
   async sendMessage(data: any): Promise<any> {

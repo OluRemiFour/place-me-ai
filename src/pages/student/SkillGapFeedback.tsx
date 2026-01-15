@@ -22,7 +22,7 @@ interface RecommendedAction {
 }
 
 export function SkillGapFeedback() {
-  const { user } = useAuth();
+  const { user, isProfileComplete } = useAuth();
   const { id } = useParams<{ id: string }>(); 
   const studentId = id || '1'; 
   
@@ -60,11 +60,20 @@ export function SkillGapFeedback() {
                 user.major || 'Computer Science'
             );
             
-            // Map backend response to UI format
+            const profileBonus = isProfileComplete ? 20 : 5;
+            const matchedCount = currentSkills.length;
+            const missingCount = result.missing_skills.length;
+            const actionsCount = result.action_plan.length;
+            
+            // Calculate readiness: 20% profile, 80% skills/actions balance
+            const skillMatchScore = matchedCount + missingCount > 0 
+                ? (matchedCount / (matchedCount + missingCount + (actionsCount * 0.3))) * 80 
+                : 0;
+            
             setAnalysis({
                 missingSkills: result.missing_skills,
-                skillsToImprove: [], // AI doesn't return this detailed yet, could iterate current skills
-                overallReadiness: Math.min(100, (currentSkills.length / (currentSkills.length + result.missing_skills.length)) * 100) || 50,
+                skillsToImprove: [], 
+                overallReadiness: Math.min(100, Math.round(profileBonus + skillMatchScore)) || 30,
                 recommendedActions: result.action_plan.map((plan, idx) => ({
                     title: `Action ${idx+1}`,
                     description: plan,

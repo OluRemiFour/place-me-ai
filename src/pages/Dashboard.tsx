@@ -140,7 +140,7 @@ export function Dashboard() {
             <Users className="h-8 w-8 mb-4" />
             <h3 className="text-xl font-bold mb-2">Browse Students</h3>
             <p className="text-sm opacity-60 mb-4">
-              View and analyze student profiles with verified skills
+              View and analyze student profiles with certified skills
             </p>
             <div className="flex items-center gap-2 font-medium group-hover:gap-3 transition-all">
               <span>Explore</span>

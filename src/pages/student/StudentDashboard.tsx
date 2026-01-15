@@ -15,16 +15,16 @@ export function StudentDashboard() {
   const [isLoading, setIsLoading] = useState(true);
 
   // Calculate Readiness Score dynamically
-  const verifiedCount = user?.skills?.filter(s => s.verified).length || 0;
+  const certifiedCount = user?.skills?.filter(s => s.verified).length || 0;
   const gpaScore = (user?.gpa || 0) * 10;
-  const skillScore = verifiedCount * 15;
+  const skillScore = certifiedCount * 15;
   const calculatedReadiness = Math.min(100, Math.round(gpaScore + skillScore));
 
   const studentProfile = {
     name: user?.name || 'Student',
     email: user?.email || '',
     matchScore: calculatedReadiness,
-    verified: verifiedCount,
+    certified: certifiedCount,
     totalSkills: user?.skills?.length || 0,
     university: user?.university || 'Not set',
     major: user?.major || 'Not set',
@@ -109,8 +109,8 @@ export function StudentDashboard() {
 
         <div className="grid grid-cols-3 gap-6 mb-8">
           <div className="border-l-2 border-black pl-6">
-            <div className="text-3xl font-bold mb-1">{studentProfile.verified}</div>
-            <p className="text-sm opacity-60">Verified Skills</p>
+            <div className="text-3xl font-bold mb-1">{studentProfile.certified}</div>
+            <p className="text-sm opacity-60">Certified Skills</p>
           </div>
           <div className="border-l-2 border-black pl-6">
             <div className="text-3xl font-bold mb-1">{studentProfile.totalSkills}</div>

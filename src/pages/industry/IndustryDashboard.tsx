@@ -39,7 +39,10 @@ export function IndustryDashboard() {
     avgMatchScore: 0,
     topSkills: [] as { skill: string; demand: number }[],
     matchTrend: [] as { date: string; matches: number }[],
-    skillDistribution: [] as { category: string; count: number }[]
+    skillDistribution: [] as { category: string; count: number }[],
+    recentMatches: [] as any[],
+    hiringPipeline: { applied: 0, message: 0, interviewing: 0, offers: 0 },
+    recentActivity: [] as any[]
   });
 
   useEffect(() => {
@@ -244,7 +247,7 @@ export function IndustryDashboard() {
               <div className="relative">
                   <div className="flex justify-between text-sm font-semibold mb-1">
                       <span>Applied</span>
-                      <span>142</span>
+                      <span>{metrics.hiringPipeline.applied}</span>
                   </div>
                   <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
                       <div className="bg-black h-full rounded-full" style={{ width: '100%' }}></div>
@@ -252,29 +255,29 @@ export function IndustryDashboard() {
               </div>
               <div className="relative pl-4">
                    <div className="flex justify-between text-sm font-semibold mb-1">
-                      <span>Screening</span>
-                      <span>45</span>
+                      <span>Message</span>
+                      <span>{metrics.hiringPipeline.message}</span>
                   </div>
                   <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
-                      <div className="bg-black h-full rounded-full" style={{ width: '32%' }}></div>
+                      <div className="bg-black h-full rounded-full" style={{ width: `${(metrics.hiringPipeline.message / metrics.hiringPipeline.applied) * 100 || 0}%` }}></div>
                   </div>
               </div>
                <div className="relative pl-8">
                    <div className="flex justify-between text-sm font-semibold mb-1">
                       <span>Interviewing</span>
-                      <span>12</span>
+                      <span>{metrics.hiringPipeline.interviewing}</span>
                   </div>
                   <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
-                      <div className="bg-black h-full rounded-full" style={{ width: '8%' }}></div>
+                      <div className="bg-black h-full rounded-full" style={{ width: `${(metrics.hiringPipeline.interviewing / metrics.hiringPipeline.applied) * 100 || 0}%` }}></div>
                   </div>
               </div>
                <div className="relative pl-12">
                    <div className="flex justify-between text-sm font-semibold mb-1">
                       <span>Offers</span>
-                      <span>3</span>
+                      <span>{metrics.hiringPipeline.offers}</span>
                   </div>
                   <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
-                      <div className="bg-black h-full rounded-full" style={{ width: '2%' }}></div>
+                      <div className="bg-black h-full rounded-full" style={{ width: `${(metrics.hiringPipeline.offers / metrics.hiringPipeline.applied) * 100 || 0}%` }}></div>
                   </div>
               </div>
           </div>
@@ -290,34 +293,22 @@ export function IndustryDashboard() {
             </div>
           </div>
           <div className="space-y-4 max-h-[220px] overflow-y-auto pr-2">
-             <div className="flex gap-3 items-start border-b border-gray-100 pb-3">
-                <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-xs">JD</div>
-                <div>
-                    <p className="text-sm font-medium">John Doe applied for <span className="font-bold">Frontend Engineer</span></p>
-                    <p className="text-xs opacity-50">2 hours ago</p>
+            {metrics.recentActivity.map((activity: any) => (
+              <div key={activity.id} className="flex gap-3 items-start border-b border-gray-100 pb-3">
+                <div className={`h-8 w-8 rounded-full bg-${activity.color}-100 flex items-center justify-center text-${activity.color}-700 font-bold text-xs`}>
+                  {activity.initials}
                 </div>
-             </div>
-             <div className="flex gap-3 items-start border-b border-gray-100 pb-3">
-                <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center text-green-700 font-bold text-xs">AS</div>
                 <div>
-                    <p className="text-sm font-medium">Alice Smith completed <span className="font-bold">Technical Assessment</span></p>
-                    <p className="text-xs opacity-50">5 hours ago</p>
+                  <p className="text-sm font-medium">
+                    {activity.user} {activity.action} <span className="font-bold">{activity.target}</span>
+                  </p>
+                  <p className="text-xs opacity-50">{activity.time}</p>
                 </div>
-             </div>
-             <div className="flex gap-3 items-start border-b border-gray-100 pb-3">
-                <div className="h-8 w-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-700 font-bold text-xs">MK</div>
-                <div>
-                    <p className="text-sm font-medium">Mike Kim accepted interview invite</p>
-                    <p className="text-xs opacity-50">Yesterday</p>
-                </div>
-             </div>
-              <div className="flex gap-3 items-start">
-                <div className="h-8 w-8 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-700 font-bold text-xs">SYS</div>
-                <div>
-                    <p className="text-sm font-medium">New match recommendation for <span className="font-bold">Backend Dev</span></p>
-                    <p className="text-xs opacity-50">Yesterday</p>
-                </div>
-             </div>
+              </div>
+            ))}
+            {metrics.recentActivity.length === 0 && (
+              <div className="text-center py-8 opacity-50 text-sm italic">No recent activity</div>
+            )}
           </div>
         </div>
       </div>
@@ -461,7 +452,7 @@ export function IndustryDashboard() {
           <Users className="h-6 w-6 mb-3" />
           <h4 className="text-lg font-bold mb-2">Browse All Candidates</h4>
           <p className="text-sm opacity-60 mb-4">
-            View complete profiles with verified skills and experience
+            View complete profiles with certified skills and experience
           </p>
           <div className="flex items-center gap-2 font-medium">
             <span>Explore</span>

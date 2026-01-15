@@ -43,7 +43,7 @@ export function StudentsList() {
     .sort((a, b) => {
       if (sortBy === 'score') return b.matchScore - a.matchScore;
       if (sortBy === 'name') return a.name.localeCompare(b.name);
-      if (sortBy === 'verified') return b.verifiedSkills - a.verifiedSkills;
+      if (sortBy === 'certified') return b.certifiedSkills - a.certifiedSkills;
       return 0;
     });
 
@@ -67,7 +67,7 @@ export function StudentsList() {
       <div className="mb-12">
         <h1 className="text-4xl font-bold mb-2">Student Profiles</h1>
         <p className="text-sm opacity-60">
-          {students.length} students · Sorted by {sortBy === 'score' ? 'match score' : sortBy === 'name' ? 'name' : 'verified skills'}
+          {students.length} students · Sorted by {sortBy === 'score' ? 'match score' : sortBy === 'name' ? 'name' : 'certified skills'}
         </p>
       </div>
 
@@ -89,7 +89,7 @@ export function StudentsList() {
           <SelectContent>
             <SelectItem value="score">Match Score</SelectItem>
             <SelectItem value="name">Name</SelectItem>
-            <SelectItem value="verified">Verified Skills</SelectItem>
+            <SelectItem value="certified">Certified Skills</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -116,8 +116,8 @@ export function StudentsList() {
 
             <div className="grid grid-cols-2 gap-4 mb-6 pb-6 border-b border-gray-200">
               <div>
-                <div className="text-2xl font-bold mb-1">{student.verifiedSkills}</div>
-                <p className="text-xs opacity-60">Verified Skills</p>
+                <div className="text-2xl font-bold mb-1">{student.certifiedSkills}</div>
+                <p className="text-xs opacity-60">Certified Skills</p>
               </div>
               <div>
                 <div className="text-2xl font-bold mb-1">{student.totalSkills}</div>

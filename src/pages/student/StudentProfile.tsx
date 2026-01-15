@@ -75,7 +75,7 @@ export function StudentProfile() {
   };
 
   // Calculate derived stats
-  const verifiedCount = user.skills?.filter(s => s.verified).length || 0;
+  const certifiedCount = user.skills?.filter(s => s.verified).length || 0;
   const totalSkills = user.skills?.length || 0;
 
   return (
@@ -110,8 +110,8 @@ export function StudentProfile() {
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8 pt-6 border-t border-gray-100">
           <div>
-            <div className="text-3xl font-bold mb-1">{verifiedCount}</div>
-            <p className="text-sm opacity-60">Verified Skills</p>
+            <div className="text-3xl font-bold mb-1">{certifiedCount}</div>
+            <p className="text-sm opacity-60">Certified Skills</p>
           </div>
           <div>
             <div className="text-3xl font-bold mb-1">{totalSkills}</div>
@@ -143,7 +143,7 @@ export function StudentProfile() {
 
       {/* Skills Breakdown */}
       <div className="space-y-4 mb-8">
-        <h3 className="text-xl font-bold mb-4">Skills & Verification</h3>
+        <h3 className="text-xl font-bold mb-4">Skills & Certification</h3>
         
         {!hasSkills && (
             <div className="p-8 border border-dashed border-gray-300 rounded-lg text-center bg-gray-50">
@@ -184,7 +184,7 @@ export function StudentProfile() {
                           {skill.verified ? (
                             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-black text-white text-xs font-medium">
                               <Check className="h-3 w-3" />
-                              Verified
+                              Certified
                             </span>
                           ) : (
                              <Button 
@@ -196,7 +196,7 @@ export function StudentProfile() {
                                     handleVerifyClick(skill.name);
                                 }}
                              >
-                                Verify Now
+                                Get Certified
                              </Button>
                           )}
                         </div>

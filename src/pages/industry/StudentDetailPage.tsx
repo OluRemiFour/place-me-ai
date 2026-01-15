@@ -130,8 +130,8 @@ export function StudentDetailPage() {
             <p className="text-sm opacity-60">GPA</p>
           </div>
           <div className="border-l-2 border-black pl-4">
-            <div className="text-2xl font-bold mb-1">{student.verifiedSkills}/{student.totalSkills}</div>
-            <p className="text-sm opacity-60">Verified Skills</p>
+            <div className="text-2xl font-bold mb-1">{student.certifiedSkills}/{student.totalSkills}</div>
+            <p className="text-sm opacity-60">Certified Skills</p>
           </div>
         </div>
 
@@ -337,7 +337,7 @@ export function StudentDetailPage() {
 
         <div className="space-y-8">
           <div className="border border-black rounded-sm p-8 bg-white">
-            <h3 className="text-xl font-semibold mb-6">Verified Credentials</h3>
+            <h3 className="text-xl font-semibold mb-6">Certified Credentials</h3>
             <div className="space-y-3">
               {student.certifications.map((credential, idx) => (
                 <div key={idx} className="flex items-center justify-between py-3 border-b border-gray-200 last:border-0">
