@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { useState } from 'react';
+import { api } from '@/services/api';
 
 interface Skill {
   name: string;
@@ -64,6 +65,32 @@ export function StudentProfile() {
         ? prev.filter(c => c !== category)
         : [...prev, category]
     );
+  };
+
+  // State for verification dialog
+  const [verifyDialogOpen, setVerifyDialogOpen] = useState(false);
+  const [selectedSkill, setSelectedSkill] = useState<string | null>(null);
+  const [proofLink, setProofLink] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleVerifyClick = (skillName: string) => {
+    setSelectedSkill(skillName);
+    setVerifyDialogOpen(true);
+  };
+
+  const handleVerifySubmit = async () => {
+    if (!selectedSkill) return;
+    setIsSubmitting(true);
+    try {
+        await api.verifySkill(selectedSkill, proofLink);
+        setVerifyDialogOpen(false);
+        setProofLink('');
+        // In real app, trigger a toast success
+    } catch (error) {
+        console.error("Verification failed", error);
+    } finally {
+        setIsSubmitting(false);
+    }
   };
 
   return (
@@ -158,11 +185,9 @@ export function StudentProfile() {
                                 variant="ghost" 
                                 size="sm" 
                                 className="h-6 text-xs text-blue-600 hover:text-blue-800 px-2"
-                                onClick={async (e) => {
+                                onClick={(e) => {
                                     e.stopPropagation();
-                                    await api.verifySkill(skill.name);
-                                    // In a real app, we'd update local state here
-                                    alert(`Verification requested for ${skill.name}`);
+                                    handleVerifyClick(skill.name);
                                 }}
                              >
                                 Verify
@@ -202,6 +227,38 @@ export function StudentProfile() {
           ))}
         </div>
       </div>
+      
+      {/* Verification Dialog */}
+      {verifyDialogOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+            <div className="bg-white p-6 rounded-lg w-full max-w-md shadow-xl animate-in fade-in zoom-in-95 duration-200">
+                <h3 className="text-xl font-bold mb-4">Verify Skill: {selectedSkill}</h3>
+                <p className="text-sm text-gray-500 mb-4">
+                    Please provide a link to a certification, test result, or portfolio item that demonstrates your proficiency in this skill.
+                </p>
+                
+                <div className="space-y-4">
+                    <div>
+                        <label className="text-sm font-medium mb-1 block">Proof URL</label>
+                        <input 
+                            type="url" 
+                            className="w-full border p-2 rounded-md"
+                            placeholder="https://coursera.org/verify/..."
+                            value={proofLink}
+                            onChange={(e) => setProofLink(e.target.value)}
+                        />
+                    </div>
+                    
+                    <div className="flex justify-end gap-3 pt-2">
+                        <Button variant="outline" onClick={() => setVerifyDialogOpen(false)}>Cancel</Button>
+                        <Button onClick={handleVerifySubmit} disabled={!proofLink || isSubmitting}>
+                            {isSubmitting ? 'Submitting...' : 'Submit for Verification'}
+                        </Button>
+                    </div>
+                </div>
+            </div>
+        </div>
+      )}
     </div>
   );
 }
