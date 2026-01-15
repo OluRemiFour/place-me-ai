@@ -149,10 +149,24 @@ export function StudentProfile() {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <span className="font-medium">{skill.name}</span>
-                          {skill.verified && (
+                          {skill.verified ? (
                             <span className="w-5 h-5 bg-black text-white rounded-full flex items-center justify-center">
                               <Check className="h-3 w-3" />
                             </span>
+                          ) : (
+                             <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className="h-6 text-xs text-blue-600 hover:text-blue-800 px-2"
+                                onClick={async (e) => {
+                                    e.stopPropagation();
+                                    await api.verifySkill(skill.name);
+                                    // In a real app, we'd update local state here
+                                    alert(`Verification requested for ${skill.name}`);
+                                }}
+                             >
+                                Verify
+                             </Button>
                           )}
                         </div>
                         <span className="font-mono font-bold">{skill.level}%</span>

@@ -46,84 +46,82 @@ function App() {
         </Route>
         
         {/* Protected Dashboard Routes (General) */}
-        <Route element={
-          <ProfileGuard>
-            <DashboardLayout />
-          </ProfileGuard>
-        }>
-          <Route path="/dashboard" element={
-            user?.role === 'student' ? <StudentDashboard /> : <IndustryDashboard />
-          } />
-          
-          <Route path="/settings" element={<SettingsPage />} />
-          <Route path="/complete-profile" element={
-            isProfileComplete ? <Navigate to="/dashboard" replace /> : <SettingsPage />
-          } />
-          
-          {/* Student Specific Routes */}
-          <Route path="/student-dashboard" element={
-            <RequireRole allowedRoles={['student']}>
-              <StudentDashboard />
-            </RequireRole>
-          } />
-          <Route path="/profile-builder" element={
-            <RequireRole allowedRoles={['student']}>
-              <ProfileBuilder />
-            </RequireRole>
-          } />
-          <Route path="/profile" element={
-            <RequireRole allowedRoles={['student']}>
-              <StudentProfile />
-            </RequireRole>
-          } />
-          <Route path="/skill-gap" element={
-            <RequireRole allowedRoles={['student']}>
-              <SkillGapFeedback />
-            </RequireRole>
-          } />
-          <Route path="/scholarships" element={
-            <RequireRole allowedRoles={['student']}>
-              <ScholarshipsPage />
-            </RequireRole>
-          } />
-          <Route path="/internships" element={
-            <RequireRole allowedRoles={['student']}>
-              <InternshipsPage />
-            </RequireRole>
-          } />
+        <Route element={<ProfileGuard />}>
+          <Route element={<DashboardLayout />}>
+            <Route path="/dashboard" element={
+              user?.role === 'student' ? <StudentDashboard /> : <IndustryDashboard />
+            } />
+            
+            <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/complete-profile" element={
+              isProfileComplete ? <Navigate to="/dashboard" replace /> : <SettingsPage />
+            } />
+            
+            {/* Student Specific Routes */}
+            <Route path="/student-dashboard" element={
+              <RequireRole allowedRoles={['student']}>
+                <StudentDashboard />
+              </RequireRole>
+            } />
+            <Route path="/profile-builder" element={
+              <RequireRole allowedRoles={['student']}>
+                <ProfileBuilder />
+              </RequireRole>
+            } />
+            <Route path="/profile" element={
+              <RequireRole allowedRoles={['student']}>
+                <StudentProfile />
+              </RequireRole>
+            } />
+            <Route path="/skill-gap" element={
+              <RequireRole allowedRoles={['student']}>
+                <SkillGapFeedback />
+              </RequireRole>
+            } />
+            <Route path="/scholarships" element={
+              <RequireRole allowedRoles={['student']}>
+                <ScholarshipsPage />
+              </RequireRole>
+            } />
+            <Route path="/internships" element={
+              <RequireRole allowedRoles={['student']}>
+                <InternshipsPage />
+              </RequireRole>
+            } />
 
-          
-          {/* Industry Specific Routes */}
-          <Route path="/industry-dashboard" element={
-            <RequireRole allowedRoles={['industry']}>
-              <IndustryDashboard />
-            </RequireRole>
-          } />
-          <Route path="/students" element={
-            <RequireRole allowedRoles={['industry']}>
-              <StudentsList />
-            </RequireRole>
-          } />
-          <Route path="/students/:id" element={
-            <RequireRole allowedRoles={['industry']}>
-              <StudentDetailPage />
-            </RequireRole>
-          } />
-          <Route path="/roles" element={
-            <RequireRole allowedRoles={['student', 'industry']}>
-              <IndustryRequirements />
-            </RequireRole>
-          } />
-          <Route path="/matches" element={
-            <RequireRole allowedRoles={['industry']}>
-              <AIMatchResults />
-            </RequireRole>
-          } />
-          <Route path="/students/:id/skill-gap" element={
-            <RequireRole allowedRoles={['industry']}>
-              <SkillGapFeedback />
-            </RequireRole>
-          } />
+            
+            {/* Industry Specific Routes */}
+            <Route path="/industry-dashboard" element={
+              <RequireRole allowedRoles={['industry']}>
+                <IndustryDashboard />
+              </RequireRole>
+            } />
+            <Route path="/students" element={
+              <RequireRole allowedRoles={['industry']}>
+                <StudentsList />
+              </RequireRole>
+            } />
+            <Route path="/students/:id" element={
+              <RequireRole allowedRoles={['industry']}>
+                <StudentDetailPage />
+              </RequireRole>
+            } />
+            <Route path="/roles" element={
+              <RequireRole allowedRoles={['student', 'industry']}>
+                <IndustryRequirements />
+              </RequireRole>
+            } />
+            <Route path="/matches" element={
+              <RequireRole allowedRoles={['industry']}>
+                <AIMatchResults />
+              </RequireRole>
+            } />
+            <Route path="/students/:id/skill-gap" element={
+              <RequireRole allowedRoles={['industry']}>
+                <SkillGapFeedback />
+              </RequireRole>
+            } />
+          </Route>
         </Route>
         
         {/* Fallback */}

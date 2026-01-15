@@ -61,14 +61,27 @@ export function ProfileBuilder() {
   });
 
   const [education, setEducation] = useState<Education[]>([
-    { institution: '', degree: '', major: '', gpa: '', graduationYear: '' }
+    { 
+      institution: user?.university || '', 
+      degree: 'bachelor', // default or infer?
+      major: user?.major || '', 
+      gpa: user?.gpa?.toString() || '', 
+      graduationYear: user?.graduationYear?.toString() || '' 
+    }
   ]);
 
   const [experience, setExperience] = useState<Experience[]>([
     { title: '', company: '', duration: '', description: '' }
   ]);
 
-  const [skills, setSkills] = useState<Skill[]>([]);
+  // Transform user skills to builder format
+  const initialSkills = user?.skills?.map(s => ({
+      name: s.name,
+      level: s.level || 50,
+      category: s.category || 'Technical'
+  })) || [];
+
+  const [skills, setSkills] = useState<Skill[]>(initialSkills);
   const [newSkill, setNewSkill] = useState({ name: '', level: 50, category: 'Technical' });
 
   const [certifications, setCertifications] = useState<Certification[]>([]);

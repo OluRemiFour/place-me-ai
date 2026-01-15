@@ -51,16 +51,38 @@ export function SkillGapFeedback() {
     const loadAnalysis = async () => {
       setIsLoading(true);
       try {
-        const data = await api.getSkillGapAnalysis(studentId, selectedRoleId);
-        setAnalysis(data);
+        if (user) {
+            // Use real AI analysis
+            const currentSkills = user.skills?.map(s => s.name) || [];
+            const result = await api.analyzeSkillGap(
+                currentSkills, 
+                targetRole, 
+                user.major || 'Computer Science'
+            );
+            
+            // Map backend response to UI format
+            setAnalysis({
+                missingSkills: result.missing_skills,
+                skillsToImprove: [], // AI doesn't return this detailed yet, could iterate current skills
+                overallReadiness: Math.min(100, (currentSkills.length / (currentSkills.length + result.missing_skills.length)) * 100) || 50,
+                recommendedActions: result.action_plan.map((plan, idx) => ({
+                    title: `Action ${idx+1}`,
+                    description: plan,
+                    duration: '2 weeks',
+                    priority: 'high'
+                }))
+            });
+        }
       } catch (error) {
         console.error('Failed to load analysis:', error);
       } finally {
         setIsLoading(false);
       }
     };
-    loadAnalysis();
-  }, [selectedRoleId]);
+    if (selectedRoleId) {
+        loadAnalysis();
+    }
+  }, [selectedRoleId, user]);
 
   const selectedRole = roles.find(r => r.id === selectedRoleId);
   const targetRole = selectedRole?.title || 'Senior Frontend Engineer';

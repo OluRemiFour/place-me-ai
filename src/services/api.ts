@@ -203,6 +203,35 @@ export const api = {
     return await response.json();
   },
 
+  async analyzeSkillGap(currentSkills: string[], targetRole: string, major: string): Promise<any> {
+    try {
+        const response = await fetch(`${API_Base_URL}/skills/analyze`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ current_skills: currentSkills, target_role: targetRole, major })
+        });
+        if (!response.ok) throw new Error('Analysis failed');
+        return await response.json();
+    } catch (e) {
+        console.error(e);
+        return { missing_skills: [], action_plan: [], recommendations: [] };
+    }
+  },
+
+  async verifySkill(skillName: string, evidenceUrl?: string): Promise<any> {
+    try {
+        const response = await fetch(`${API_Base_URL}/skills/verify`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ skill_name: skillName, evidence_url: evidenceUrl })
+        });
+        return await response.json();
+    } catch (e) {
+        console.error(e);
+        return { status: 'error' };
+    }
+  },
+
   async updateProfile(userId: string, data: any): Promise<any> {
     const response = await fetch(`${API_Base_URL}/auth/update-profile?user_id=${userId}`, {
         method: 'PUT',

@@ -129,6 +129,21 @@ export function SettingsPage() {
           </CardHeader>
           <form onSubmit={handleIndustrySave}>
             <CardContent className="space-y-6">
+            
+            {/* Completion Status for everyone */}
+            <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-100">
+                <div className="flex justify-between text-sm mb-2">
+                    <span className="font-semibold">Profile Completion</span>
+                    <span>{isProfileComplete ? '100%' : '85%'}</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2.5">
+                    <div className="bg-black h-2.5 rounded-full" style={{ width: isProfileComplete ? '100%' : '85%' }}></div>
+                </div>
+                {!isProfileComplete && (
+                   <p className="text-xs text-red-500 mt-2 font-medium">Please complete all fields to unlock full access.</p>
+                )}
+            </div>
+
             {user.role === 'industry' ? (
               <>
                 <div className="space-y-2">
