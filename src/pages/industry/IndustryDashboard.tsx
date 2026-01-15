@@ -74,7 +74,17 @@ export function IndustryDashboard() {
     };
     loadData();
   }, []);
-// ... code ...
+
+  const filteredStudents = students.filter(student =>
+    student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    student.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    student.skills?.some(s => s.name.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
+
+  const handleStudentClick = (studentId: string) => {
+    navigate(`/student/${studentId}`); 
+  };
+
   return (
     <div className="container mx-auto px-8 py-8">
       {/* Header */}

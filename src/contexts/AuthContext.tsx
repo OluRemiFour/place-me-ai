@@ -238,7 +238,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       missingFields,
       login,
       register,
-      register,
       logout,
       // verifyOTP,
       // resendOTP,
