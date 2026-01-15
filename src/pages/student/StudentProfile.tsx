@@ -13,7 +13,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
 export function StudentProfile() {
-  const { user, refreshUser } = useAuth();
+  const { user, refreshUser, isVerified } = useAuth();
   const [expandedCategories, setExpandedCategories] = useState<string[]>(['Technical']);
   
   // State for verification dialog
@@ -94,7 +94,7 @@ export function StudentProfile() {
           <div>
             <div className="flex items-center gap-3 mb-2">
                 <h2 className="text-3xl font-bold">{user.name}</h2>
-                {user.role === 'student' && <Badge variant="secondary">Student</Badge>}
+                {user.role?.toLowerCase().trim() === 'student' && <Badge variant="secondary">Student</Badge>}
             </div>
             <p className="text-base opacity-60 mb-1">{user.email}</p>
             <p className="text-sm opacity-60">{user.university} · {user.major}</p>
@@ -103,7 +103,7 @@ export function StudentProfile() {
              {/* We could show profile strength or match readiness if available */}
              <div className="inline-flex items-center gap-2 px-3 py-1 bg-green-50 text-green-700 rounded-full text-sm font-medium border border-green-200">
                 <ShieldCheck className="w-4 h-4" />
-                Profile Status: {user.is_verified ? 'Verified' : 'Active'}
+                Profile Status: {isVerified ? 'Verified' : 'Active'}
              </div>
           </div>
         </div>

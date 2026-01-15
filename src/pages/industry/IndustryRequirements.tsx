@@ -160,7 +160,7 @@ export function IndustryRequirements() {
           {roles.length} active role requirements · Updated daily
         </p>
         <div className="mt-4">
-          {user?.role === 'industry' && (
+          {user?.role?.toLowerCase().trim() === 'industry' && (
           <Button onClick={() => setSelectedRole({ 
               id: 'new', 
               title: 'New Role', 

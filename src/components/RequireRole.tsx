@@ -22,10 +22,16 @@ export function RequireRole({ children, allowedRoles }: RequireRoleProps) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  if (allowedRoles && user?.role && !allowedRoles.includes(user.role)) {
-    // Redirect to their appropriate dashboard if they try to access a wrong route
-    const redirectPath = user?.role === 'student' ? '/student-dashboard' : '/industry-dashboard';
-    return <Navigate to={redirectPath} replace />;
+  if (allowedRoles && user?.role) {
+       const normalize = (r: string) => r?.toLowerCase().trim();
+       const userRole = normalize(user.role);
+       const allowed = allowedRoles.map(normalize);
+       
+       if (!allowed.includes(userRole)) {
+            // Redirect to their appropriate dashboard if they try to access a wrong route
+            const redirectPath = userRole === 'student' ? '/student-dashboard' : '/industry-dashboard';
+            return <Navigate to={redirectPath} replace />;
+       }
   }
 
   return <>{children}</>;

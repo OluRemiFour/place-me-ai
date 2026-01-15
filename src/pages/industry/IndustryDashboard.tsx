@@ -48,7 +48,8 @@ export function IndustryDashboard() {
   }, []);
 
   useEffect(() => {
-    if (!isProfileComplete && user?.role === 'industry') {
+    const normalizeRole = (r: string | null | undefined) => r?.toLowerCase().trim();
+    if (!isProfileComplete && normalizeRole(user?.role) === 'industry') {
         const timer = setTimeout(() => setShowProfileModal(true), 1000);
         return () => clearTimeout(timer);
     }

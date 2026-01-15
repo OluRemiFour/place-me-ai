@@ -52,7 +52,8 @@ export function SettingsPage() {
   }, []);
 
   useEffect(() => {
-    if (user?.role === 'industry') {
+    const normalizeRole = (r: string | null | undefined) => r?.toLowerCase().trim();
+    if (normalizeRole(user?.role) === 'industry') {
       setIndustryData({
         company_name: user.company_name || '',
         industry_type: user.industry_type || '',

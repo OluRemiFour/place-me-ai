@@ -51,7 +51,7 @@ function App() {
         <Route element={<ProfileGuard />}>
           <Route element={<DashboardLayout />}>
             <Route path="/dashboard" element={
-              user?.role === 'student' ? <StudentDashboard /> : <IndustryDashboard />
+              (user?.role?.toLowerCase().trim() === 'student') ? <StudentDashboard /> : <IndustryDashboard />
             } />
             
             <Route path="/settings" element={<SettingsPage />} />

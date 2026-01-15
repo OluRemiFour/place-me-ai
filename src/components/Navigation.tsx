@@ -26,8 +26,11 @@ export function Navigation() {
   
   const isActive = (path: string) => location.pathname === path || location.pathname.startsWith(path + '/');
   
-  const isStudent = user?.role === 'student';
-  const isIndustry = user?.role === 'industry';
+  const normalizeRole = (r: string | null | undefined) => r?.toLowerCase().trim();
+  const currentRole = normalizeRole(user?.role);
+  
+  const isStudent = currentRole === 'student';
+  const isIndustry = currentRole === 'industry';
   
   const handleLogout = () => {
     logout();
