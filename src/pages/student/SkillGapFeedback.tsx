@@ -4,7 +4,7 @@ import { ArrowRight, Clock, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { api, SkillGap, Role } from '@/services/api';
+import { api, SkillGap, Role, calculateRoleReadiness } from '@/services/api';
 import {
   Select,
   SelectContent,
@@ -51,29 +51,28 @@ export function SkillGapFeedback() {
     const loadAnalysis = async () => {
       setIsLoading(true);
       try {
-        if (user) {
+        if (user && selectedRole) {
             // Use real AI analysis
-            const currentSkills = user.skills?.map(s => s.name) || [];
+            const currentSkills = user.skills || [];
+            const currentSkillNames = currentSkills.map(s => s.name);
             const result = await api.analyzeSkillGap(
-                currentSkills, 
+                currentSkillNames, 
                 targetRole, 
                 user.major || 'Computer Science'
             );
             
-            const profileBonus = isProfileComplete ? 20 : 5;
-            const matchedCount = currentSkills.length;
-            const missingCount = result.missing_skills.length;
-            const actionsCount = result.action_plan.length;
-            
-            // Calculate readiness: 20% profile, 80% skills/actions balance
-            const skillMatchScore = matchedCount + missingCount > 0 
-                ? (matchedCount / (matchedCount + missingCount)) * 60 + (Math.max(0, 5 - actionsCount) / 5) * 20
-                : 10;
+            // Use the new role-specific readiness calculation
+            const roleReadiness = calculateRoleReadiness(
+                currentSkills,
+                selectedRole.requiredSkills,
+                selectedRole.preferredSkills,
+                isProfileComplete
+            );
             
             setAnalysis({
                 missingSkills: result.missing_skills,
                 skillsToImprove: [], 
-                overallReadiness: Math.min(100, Math.round(profileBonus + skillMatchScore)) || 30,
+                overallReadiness: roleReadiness,
                 recommendedActions: result.action_plan.map((plan, idx) => ({
                     title: `Action ${idx+1}`,
                     description: plan,

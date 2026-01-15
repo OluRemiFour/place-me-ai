@@ -155,7 +155,7 @@ export function IndustryRequirements() {
           // Reset form
           setNewRoleForm({
             title: '',
-            company: 'My Company',
+            company: user?.company_name || 'My Company',
             seniority: 'Mid-Level',
             industry: 'Technology',
             requiredSkills: [],
@@ -461,16 +461,26 @@ export function IndustryRequirements() {
                  <div className="pt-2 space-y-3">
                    {user?.role?.toLowerCase().trim() === 'industry' ? (
                      <>
-                       <Button 
-                         className="w-full h-12 text-base font-semibold group"
-                         onClick={() => {
-                           setSelectedRole(null);
-                           navigate('/matches');
-                         }}
-                       >
-                         Find Matching Candidates
-                         <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
-                       </Button>
+                        <Button 
+                          className="w-full h-12 text-base font-semibold group"
+                          onClick={async () => {
+                            try {
+                              const matches = await api.getMatchesForRole(selectedRole.id);
+                              if (matches.length === 0) {
+                                toast.info("No matching candidates found for this role yet. Try adjusting the requirements or check back later.");
+                              } else {
+                                setSelectedRole(null);
+                                navigate('/matches');
+                              }
+                            } catch (error) {
+                              console.error('Failed to check matches:', error);
+                              navigate('/matches');
+                            }
+                          }}
+                        >
+                          Find Matching Candidates
+                          <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+                        </Button>
                        <Button 
                          variant="outline" 
                          className="w-full h-12 text-base font-semibold border-black"

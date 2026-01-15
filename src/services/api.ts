@@ -121,6 +121,42 @@ export function calculateReadinessScore(skills: SkillDetail[] = [], isProfileCom
   return Math.min(100, baseSkillScore + verificationBonus + profileBonus);
 }
 
+export function calculateRoleReadiness(
+  studentSkills: SkillDetail[] = [], 
+  requiredSkills: string[] = [], 
+  preferredSkills: string[] = [],
+  isProfileComplete: boolean = false
+): number {
+  if (!studentSkills || studentSkills.length === 0) return 0;
+  
+  const studentSkillNames = studentSkills.map(s => s.name.toLowerCase());
+  const verifiedSkillNames = studentSkills.filter(s => s.verified).map(s => s.name.toLowerCase());
+  
+  // Calculate required skills match (50% weight)
+  const requiredMatches = requiredSkills.filter(req => 
+    studentSkillNames.includes(req.toLowerCase())
+  ).length;
+  const requiredScore = requiredSkills.length > 0 
+    ? (requiredMatches / requiredSkills.length) * 50 
+    : 25; // If no required skills specified, give partial credit
+  
+  // Calculate preferred skills match (20% weight)
+  const preferredMatches = preferredSkills.filter(pref => 
+    studentSkillNames.includes(pref.toLowerCase())
+  ).length;
+  const preferredScore = preferredSkills.length > 0 
+    ? (preferredMatches / preferredSkills.length) * 20 
+    : 10;
+  
+  // Profile strength bonus (20% weight)
+  const profileScore = isProfileComplete ? 20 : 10;
+  
+  // Verified skills bonus (10% weight)
+  const verificationScore = Math.min(10, (verifiedSkillNames.length / Math.max(1, requiredSkills.length)) * 10);
+  
+  return Math.min(100, Math.round(requiredScore + preferredScore + profileScore + verificationScore));
+}
+
 export const api = {
   // Auth
   async login(email: string, password: string): Promise<any> {
