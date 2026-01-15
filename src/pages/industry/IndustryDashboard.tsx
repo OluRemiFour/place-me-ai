@@ -11,8 +11,10 @@ import { api, Student, Role } from '@/services/api';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 
+import { Textarea } from '@/components/ui/textarea';
+
 export function IndustryDashboard() {
-  const { user } = useAuth();
+  const { user, checkProfileStatus } = useAuth();
   const navigate = useNavigate();
   const [students, setStudents] = useState<Student[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
@@ -22,8 +24,8 @@ export function IndustryDashboard() {
   // Local state for company details (derived from user)
   const [companyDetails, setCompanyDetails] = useState({
     website: user?.company_url || '',
-    social: '', // Not in model yet
-    location: '' // Not in model yet
+    location: user?.location || '',
+    bio: user?.bio || ''
   });
 
   const [metrics, setMetrics] = useState({
@@ -35,6 +37,17 @@ export function IndustryDashboard() {
     matchTrend: [] as { date: string; matches: number }[],
     skillDistribution: [] as { category: string; count: number }[]
   });
+
+  useEffect(() => {
+    // Sync state with user context when it changes (e.g. after update)
+    if (user) {
+        setCompanyDetails({
+            website: user.company_url || '',
+            location: user.location || '',
+            bio: user.bio || ''
+        });
+    }
+  }, [user]);
 
   useEffect(() => {
     const loadData = async () => {
@@ -55,50 +68,7 @@ export function IndustryDashboard() {
     };
     loadData();
   }, []);
-
-  const filteredStudents = students.filter(student =>
-    student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    student.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    student.topSkills.some(skill => skill.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
-
-  const handleStudentClick = (studentId: string) => {
-    navigate(`/students/${studentId}`);
-  };
-
-  // Simple Bar Chart Component
-  const SimpleBarChart = ({ data }: { data: { label: string; value: number }[] }) => {
-    const maxValue = Math.max(...data.map(d => d.value));
-    return (
-      <div className="space-y-3">
-        {data.map((item, idx) => (
-          <div key={idx} className="space-y-1">
-            <div className="flex justify-between text-sm">
-              <span className="font-medium">{item.label}</span>
-              <span className="font-mono font-bold">{item.value}</span>
-            </div>
-            <div className="h-2 bg-gray-100 rounded-sm overflow-hidden">
-              <div 
-                className="h-full bg-black transition-all duration-500"
-                style={{ width: `${(item.value / maxValue) * 100}%` }}
-              />
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  };
-
-  if (isLoading) {
-    return (
-      <div className="container mx-auto px-8 py-8">
-        <div className="flex items-center justify-center h-64">
-          <div className="text-lg font-medium opacity-60">Loading dashboard...</div>
-        </div>
-      </div>
-    );
-  }
-
+// ... code ...
   return (
     <div className="container mx-auto px-8 py-8">
       {/* Header */}
@@ -106,12 +76,12 @@ export function IndustryDashboard() {
         <div>
            <h1 className="text-4xl font-bold mb-2">Industry Dashboard</h1>
            <div className="text-sm opacity-60 mb-2">
-             Welcome back, {user?.name || 'Recruiter'} · {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+             Welcome back, {user?.company_name || user?.name || 'Recruiter'} · {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
            </div>
-           <div className="flex gap-4 text-sm opacity-80">
+           <div className="flex gap-4 text-sm opacity-80 flex-wrap">
               {companyDetails.website && <a href={companyDetails.website} target="_blank" className="hover:underline flex items-center gap-1"><ExternalLink className="w-3 h-3"/> {companyDetails.website}</a>}
-              {companyDetails.social && <span>{companyDetails.social}</span>}
               {companyDetails.location && <span className="flex items-center gap-1"><MapPin className="w-3 h-3"/> {companyDetails.location}</span>}
+              {companyDetails.bio && <span className="block w-full text-xs mt-1 opacity-60 max-w-2xl">{companyDetails.bio}</span>}
            </div>
         </div>
         
@@ -126,32 +96,63 @@ export function IndustryDashboard() {
                 </DialogHeader>
                 <div className="space-y-4 py-4">
                     <div className="space-y-2">
+                        <Label htmlFor="companyName">Company Name</Label>
+                        <Input 
+                            id="companyName" 
+                            defaultValue={user?.company_name || user?.name} 
+                            disabled
+                            className="bg-gray-100"
+                        />
+                         <p className="text-xs opacity-60">Contact support to change company name</p>
+                    </div>
+                    <div className="space-y-2">
                         <Label htmlFor="website">Website</Label>
                         <Input 
                             id="website" 
-                            defaultValue={companyDetails.website} 
+                            value={companyDetails.website} 
                             onChange={(e) => setCompanyDetails({...companyDetails, website: e.target.value})}
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="social">Social Handle</Label>
-                        <Input 
-                            id="social" 
-                            defaultValue={companyDetails.social} 
-                            onChange={(e) => setCompanyDetails({...companyDetails, social: e.target.value})}
+                            placeholder="https://example.com"
                         />
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="location">Location</Label>
                         <Input 
                             id="location" 
-                            defaultValue={companyDetails.location} 
+                            value={companyDetails.location} 
                             onChange={(e) => setCompanyDetails({...companyDetails, location: e.target.value})}
+                            placeholder="e.g. San Francisco, CA"
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="about">About Company</Label>
+                         <Textarea 
+                            id="about" 
+                            value={companyDetails.bio} 
+                            onChange={(e) => setCompanyDetails({...companyDetails, bio: e.target.value})}
+                            placeholder="Brief description of your company..."
+                            className="min-h-[100px]"
                         />
                     </div>
                 </div>
                 <DialogFooter>
-                    <Button onClick={() => alert("Profile Updated!")}>Save Changes</Button>
+                    <Button onClick={async () => {
+                        if (!user) return;
+                        try {
+                            await api.updateProfile(user.id, {
+                                ...companyDetails,
+                                company_url: companyDetails.website,
+                                bio: companyDetails.bio
+                            });
+                             // Refresh context
+                            await checkProfileStatus();
+                            // Optional: Could reload page or use a toast here
+                            // For now, simpler alert to confirm action
+                            alert("Company profile updated successfully!");
+                        } catch (e) {
+                            console.error(e);
+                            alert("Failed to update profile.");
+                        }
+                    }}>Save Changes</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

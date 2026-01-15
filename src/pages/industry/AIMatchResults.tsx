@@ -22,14 +22,24 @@ export function AIMatchResults() {
 
   useEffect(() => {
     const loadRoles = async () => {
-      const rolesData = await api.getRoles();
-      setRoles(rolesData);
+      try {
+        const rolesData = await api.getRoles();
+        setRoles(rolesData);
+        if (rolesData.length > 0) {
+            setSelectedRoleId(rolesData[0].id);
+        }
+      } catch (e) {
+        console.error("Failed to load roles", e);
+      }
     };
     loadRoles();
   }, []);
 
   useEffect(() => {
     const loadMatches = async () => {
+      // Don't load if no role selected (or waiting for initial load)
+      if (!selectedRoleId || roles.length === 0) return;
+      
       setIsLoading(true);
       try {
         const data = await api.getMatchesForRole(selectedRoleId);
@@ -41,11 +51,11 @@ export function AIMatchResults() {
       }
     };
     loadMatches();
-  }, [selectedRoleId]);
+  }, [selectedRoleId, roles]);
 
   const selectedRole = roles.find(r => r.id === selectedRoleId);
-  const roleName = selectedRole?.title || 'Senior Frontend Engineer';
-  const company = selectedRole?.company || 'TechFlow Systems';
+  const roleName = selectedRole?.title || 'No Role Selected';
+  const company = selectedRole?.company || 'Company';
 
   const exportToCSV = () => {
     const headers = ['Name', 'Email', 'Match %', 'Top Skills', 'Experience', 'Location'];
@@ -77,7 +87,11 @@ export function AIMatchResults() {
       <div className="mb-12">
         <h1 className="text-4xl font-bold mb-2">AI Match Results</h1>
         <p className="text-sm opacity-60">
-          {roleName} at {company} · {matches.length} candidates ranked by fit
+          {roles.length > 0 ? (
+             `${roleName} at ${company} · ${matches.length} candidates ranked by fit`
+          ) : (
+             "No active roles found. Post a requirement to see matches."
+          )}
         </p>
       </div>
 
