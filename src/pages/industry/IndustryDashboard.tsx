@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
 import { api, Student, Role } from '@/services/api';
+import { toast } from 'sonner';
 
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
@@ -14,7 +15,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 
 export function IndustryDashboard() {
-  const { user, checkProfileStatus } = useAuth();
+  const { user, checkProfileStatus, updateUser } = useAuth();
   const navigate = useNavigate();
   const [students, setStudents] = useState<Student[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
@@ -145,12 +146,18 @@ export function IndustryDashboard() {
                             });
                              // Refresh context
                             await checkProfileStatus();
+                            // Update local user context immediately
+                            updateUser({
+                                company_url: companyDetails.website,
+                                bio: companyDetails.bio,
+                                location: companyDetails.location
+                            });
                             // Optional: Could reload page or use a toast here
                             // For now, simpler alert to confirm action
-                            alert("Company profile updated successfully!");
+                            toast.success("Company profile updated successfully!");
                         } catch (e) {
                             console.error(e);
-                            alert("Failed to update profile.");
+                            toast.error("Failed to update profile.");
                         }
                     }}>Save Changes</Button>
                 </DialogFooter>

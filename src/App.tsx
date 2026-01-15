@@ -22,6 +22,7 @@ import { ProfileBuilder } from "@/pages/student/ProfileBuilder";
 import { SettingsPage } from "@/pages/SettingsPage";
 import { OTPVerificationPage } from "@/pages/auth/OTPVerificationPage";
 import { useAuth } from "@/contexts/AuthContext";
+import { Toaster } from "@/components/ui/sonner";
 
 import { RequireRole } from "@/components/RequireRole";
 import { ProfileCompletionGuard } from "@/components/auth/ProfileCompletionGuard";
@@ -128,6 +129,7 @@ function App() {
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      <Toaster />
     </Suspense>
   );
 }

@@ -7,10 +7,28 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Loader2, Check, Building2, Globe, MapPin } from 'lucide-react';
+import { toast } from 'sonner';
 import { ProfileBuilder } from './student/ProfileBuilder';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+
+const isValidUrl = (url: string) => {
+  try {
+    new URL(url);
+    return true;
+  } catch {
+    return false;
+  }
+};
 
 export function SettingsPage() {
-  const { user, isProfileComplete, checkProfileStatus } = useAuth();
+  const { user, isProfileComplete, checkProfileStatus, updateUser } = useAuth();
   const navigate = useNavigate();
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
@@ -21,7 +39,8 @@ export function SettingsPage() {
     company_name: '',
     industry_type: '',
     location: '',
-    bio: ''
+    bio: '',
+    company_url: ''
   });
 
   useEffect(() => {
@@ -30,7 +49,8 @@ export function SettingsPage() {
         company_name: user.company_name || '',
         industry_type: user.industry_type || '',
         location: user.location || '',
-        bio: user.bio || ''
+        bio: user.bio || '',
+        company_url: user.company_url || ''
       });
     }
   }, [user]);
@@ -54,11 +74,23 @@ export function SettingsPage() {
         company_name: industryData.company_name,
         industry_type: industryData.industry_type,
         location: industryData.location,
-        bio: industryData.bio
+        bio: industryData.bio,
+        company_url: industryData.company_url
       });
       
       await checkProfileStatus(); // Re-validate profile status
+      
+      // Update local user context immediately
+      updateUser({
+        company_name: industryData.company_name,
+        industry_type: industryData.industry_type,
+        location: industryData.location,
+        bio: industryData.bio,
+        company_url: industryData.company_url
+      });
+
       setSuccess(true);
+      toast.success("Profile updated successfully!");
       
       // If they were completing profile, maybe redirect to dashboard after a delay
       setTimeout(() => {
@@ -66,6 +98,7 @@ export function SettingsPage() {
       }, 1500);
     } catch (err: any) {
       setError(err.message || 'Failed to update profile');
+      toast.error(err.message || 'Failed to update profile');
     } finally {
       setIsSaving(false);
     }
@@ -88,73 +121,86 @@ export function SettingsPage() {
           </CardHeader>
           <form onSubmit={handleIndustrySave}>
             <CardContent className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="company_name">Company Name</Label>
-                <div className="relative">
-                  <Building2 className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                  <Input
-                    id="company_name"
-                    value={industryData.company_name}
-                    onChange={(e) => setIndustryData({ ...industryData, company_name: e.target.value })}
-                    className="pl-10 h-12"
-                    placeholder="SkillSync Inc."
-                    required
+            {user.role === 'industry' ? (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="company_name">Company Name</Label>
+                  <div className="relative">
+                    <Building2 className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                    <Input 
+                      id="company_name"
+                      value={industryData.company_name}
+                      onChange={(e) => setIndustryData({...industryData, company_name: e.target.value})}
+                      className="pl-10 h-12"
+                      placeholder="SkillSync Inc."
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="company_url">Website</Label>
+                  <div className="relative">
+                    <Globe className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                    <Input 
+                      id="company_url"
+                      value={industryData.company_url || ''}
+                      onChange={(e) => setIndustryData({...industryData, company_url: e.target.value})} // Note: check type definition if company_url exists
+                      className="pl-10 h-12"
+                      placeholder="https://www.skillsync.com"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="industry_type">Industry</Label>
+                      <Select 
+                        value={industryData.industry_type || ''} 
+                        onValueChange={(v) => setIndustryData({...industryData, industry_type: v})}
+                      >
+                        <SelectTrigger className="h-12">
+                          <SelectValue placeholder="Select industry" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Technology">Technology</SelectItem>
+                          <SelectItem value="Finance">Finance</SelectItem>
+                          <SelectItem value="Healthcare">Healthcare</SelectItem>
+                          <SelectItem value="Education">Education</SelectItem>
+                          <SelectItem value="Manufacturing">Manufacturing</SelectItem>
+                          <SelectItem value="Other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="location">Location</Label>
+                      <div className="relative">
+                        <MapPin className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                        <Input 
+                          id="location"
+                          value={industryData.location || ''}
+                          onChange={(e) => setIndustryData({...industryData, location: e.target.value})}
+                          className="pl-10 h-12"
+                          placeholder="Remote, Lagos, New York..."
+                        />
+                      </div>
+                    </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="bio">About Company</Label>
+                  <Textarea 
+                    id="bio"
+                    value={industryData.bio || ''}
+                    onChange={(e) => setIndustryData({...industryData, bio: e.target.value})}
+                    placeholder="Tell us about your company's mission, values, and what you do..."
+                    className="min-h-[120px]"
                   />
                 </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="industry_type">Industry Type</Label>
-                <div className="relative">
-                  <Globe className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                  <Input
-                    id="industry_type"
-                    value={industryData.industry_type}
-                    onChange={(e) => setIndustryData({ ...industryData, industry_type: e.target.value })}
-                    className="pl-10 h-12"
-                    placeholder="E-learning, Technology..."
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="location">Location</Label>
-                <div className="relative">
-                  <MapPin className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                  <Input
-                    id="location"
-                    value={industryData.location}
-                    onChange={(e) => setIndustryData({ ...industryData, location: e.target.value })}
-                    className="pl-10 h-12"
-                    placeholder="Remote, Lagos, New York..."
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="bio">About the Company</Label>
-                <textarea
-                  id="bio"
-                  value={industryData.bio}
-                  onChange={(e) => setIndustryData({ ...industryData, bio: e.target.value })}
-                  className="w-full min-h-[120px] p-3 rounded-md border border-gray-200 focus:outline-none focus:ring-2 focus:ring-black"
-                  placeholder="Describe your company's mission and goals..."
-                />
-              </div>
-
-              {error && (
+              </>
+            ) : null}    {error && (
                 <div className="p-4 rounded-md bg-red-50 border border-red-200 text-sm text-red-600">
                   {error}
                 </div>
               )}
 
-              {success && (
-                <div className="p-4 rounded-md bg-green-50 border border-green-200 text-sm text-green-600 flex items-center">
-                  <Check className="mr-2 h-4 w-4" />
-                  Profile updated successfully! Redirecting...
-                </div>
-              )}
             </CardContent>
             <CardFooter>
               <Button 

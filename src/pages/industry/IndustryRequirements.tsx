@@ -14,8 +14,11 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { api, Role } from '@/services/api';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
 
 export function IndustryRequirements() {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -26,7 +29,7 @@ export function IndustryRequirements() {
   // Form State for New Role
   const [newRoleForm, setNewRoleForm] = useState<Partial<Role>>({
       title: '',
-      company: 'My Company', // Ideally fetched from user profile
+      company: 'My Company', 
       seniority: 'Mid-Level',
       industry: 'Technology',
       requiredSkills: [],
@@ -131,7 +134,7 @@ export function IndustryRequirements() {
           });
       } catch (error) {
           console.error("Failed to publish role", error);
-          alert("Failed to publish role. Please try again.");
+          toast.error("Failed to publish role. Please try again.");
       } finally {
           setIsPublishing(false);
       }
@@ -157,6 +160,7 @@ export function IndustryRequirements() {
           {roles.length} active role requirements · Updated daily
         </p>
         <div className="mt-4">
+          {user?.role === 'industry' && (
           <Button onClick={() => setSelectedRole({ 
               id: 'new', 
               title: 'New Role', 
@@ -172,6 +176,7 @@ export function IndustryRequirements() {
              Post New Requirement
              <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
           </Button>
+          )}
         </div>
       </div>
 
@@ -318,20 +323,31 @@ export function IndustryRequirements() {
                     <div className="space-y-4 border-t border-b py-4">
                         <label className="text-sm font-medium">Required Skills</label>
                         <div className="flex gap-2">
-                            <Input 
-                                value={newSkillInput}
-                                onChange={(e) => setNewSkillInput(e.target.value)}
-                                placeholder="Add a skill (e.g. React, Python)"
-                                onKeyDown={(e) => {
-                                    if(e.key === 'Enter') {
-                                        e.preventDefault();
-                                        handleAddSkill('required');
-                                    }
-                                }}
-                            />
-                            <Button onClick={() => handleAddSkill('required')} size="sm" variant="outline">
-                                <Plus className="h-4 w-4" />
-                            </Button>
+                             <Select onValueChange={(v) => {
+                                 if (v && !newRoleForm.requiredSkills?.includes(v)) {
+                                     setNewRoleForm(prev => ({
+                                         ...prev,
+                                         requiredSkills: [...(prev.requiredSkills || []), v]
+                                     }));
+                                 }
+                             }}>
+                              <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Select a skill" />
+                              </SelectTrigger>
+                              <SelectContent className="max-h-[200px]">
+                                <SelectItem value="React">React</SelectItem>
+                                <SelectItem value="TypeScript">TypeScript</SelectItem>
+                                <SelectItem value="Python">Python</SelectItem>
+                                <SelectItem value="Node.js">Node.js</SelectItem>
+                                <SelectItem value="Java">Java</SelectItem>
+                                <SelectItem value="AWS">AWS</SelectItem>
+                                <SelectItem value="SQL">SQL</SelectItem>
+                                <SelectItem value="Docker">Docker</SelectItem>
+                                <SelectItem value="Figma">Figma</SelectItem>
+                                <SelectItem value="Product Management">Product Management</SelectItem>
+                                {/* Add more common skills */}
+                              </SelectContent>
+                            </Select>
                         </div>
                         <div className="flex flex-wrap gap-2">
                             {newRoleForm.requiredSkills?.map(s => (
@@ -425,7 +441,7 @@ export function IndustryRequirements() {
                      className="w-full h-12 text-base font-semibold border-black"
                      onClick={() => {
                         // Logic to close/delete placement
-                         alert("Placement closed for " + selectedRole.title);
+                         toast.success("Placement closed for " + selectedRole.title);
                          setRoles(roles.filter(r => r.id !== selectedRole.id));
                          setSelectedRole(null);
                      }}

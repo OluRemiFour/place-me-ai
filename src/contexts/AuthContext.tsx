@@ -48,6 +48,7 @@ interface AuthContextType {
   resendOTP: () => Promise<void>;
   checkProfileStatus: () => Promise<void>;
   googleLogin: (idToken: string, role: UserRole) => Promise<void>;
+  updateUser: (updates: Partial<User>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -219,7 +220,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       verifyOTP,
       resendOTP,
       checkProfileStatus,
-      googleLogin
+      googleLogin,
+      updateUser: (updates: Partial<User>) => {
+        if (user) {
+          const updatedUser = { ...user, ...updates };
+          setUser(updatedUser);
+          localStorage.setItem('skillsync_user', JSON.stringify(updatedUser));
+        }
+      }
     }}>
       {children}
     </AuthContext.Provider>

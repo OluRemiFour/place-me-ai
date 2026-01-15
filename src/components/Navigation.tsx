@@ -66,13 +66,13 @@ export function Navigation() {
         </Link>
       )}
       
-      {isIndustry && (
+      {(isIndustry || isStudent) && (
         <Link 
           to="/roles" 
           onClick={() => mobile && setIsOpen(false)}
           className={`text-sm font-medium transition-opacity ${isActive('/roles') ? 'opacity-100' : 'opacity-60 hover:opacity-100'} ${mobile ? 'text-lg py-2' : ''}`}
         >
-          Roles
+          {isIndustry ? 'Roles' : 'Find Roles'}
         </Link>
       )}
       
