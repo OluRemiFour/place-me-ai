@@ -404,8 +404,42 @@ export function SkillGapFeedback() {
                 </h6>
                 <p className="text-sm opacity-70">Follow this roadmap to achieve your career goals.</p>
               </div>
-              <Button variant="outline" className="bg-white text-black hover:bg-gray-100 border-none">
-                Save Roadmap
+              <Button 
+                variant="outline" 
+                className="bg-white text-black hover:bg-gray-100 border-none"
+                onClick={() => {
+                  if (!learningPath) return;
+                  
+                  const content = `SKILLSYNC PERSONALIZED LEARNING PATH\n` +
+                    `====================================\n\n` +
+                    `Goal: ${targetRole}\n` +
+                    `Date: ${new Date().toLocaleDateString()}\n\n` +
+                    `ROADMAP OVERVIEW\n` +
+                    `----------------\n` +
+                    `${learningPath.roadmap}\n\n` +
+                    `STRATEGIC MILESTONES\n` +
+                    `--------------------\n` +
+                    (learningPath.milestones || []).map((m: any, i: number) => (
+                      `PHASE ${i + 1}: ${m.title}\n` +
+                      `Estimated Time: ${m.estimated_time}\n` +
+                      `Focus: ${m.description.replace(/\*\*/g, '')}\n` +
+                      `Resources:\n` +
+                      (m.resources || []).map((r: string) => `  - ${r}`).join('\n') +
+                      `\n`
+                    )).join('\n');
+
+                  const blob = new Blob([content], { type: 'text/plain' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `SkillSync_Roadmap_${targetRole.replace(/\s+/g, '_')}.txt`;
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
+                  URL.revokeObjectURL(url);
+                }}
+              >
+                Download Roadmap
               </Button>
             </div>
           </div>
