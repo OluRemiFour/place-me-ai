@@ -70,7 +70,7 @@ export function LoginPage() {
       </div>
 
       {/* Left Panel - Form */}
-      <div className="relative z-10 flex-1 flex items-center justify-center p-4 sm:p-8 lg:p-24 bg-white/80 backdrop-blur-sm lg:bg-white overflow-y-auto">
+      <div className="relative z-10 flex-1 flex items-center justify-center p-4 sm:p-8 lg:p-12 xl:p-24 bg-white/80 backdrop-blur-sm lg:bg-white overflow-y-auto">
         <div className="w-full max-w-md space-y-8 py-8">
           <div className="">
             <Link to="/" className="text-2xl font-bold tracking-tight inline-block hover:opacity-80 transition-opacity">
