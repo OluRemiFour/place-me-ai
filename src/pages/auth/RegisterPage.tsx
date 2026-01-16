@@ -82,8 +82,8 @@ export function RegisterPage() {
       </div>
 
       {/* Left Panel - Form */}
-      <div className="relative z-10 flex-1 flex flex-col items-center justify-start min-h-screen py-10 px-6 sm:px-10 lg:px-12 xl:px-24 bg-white/80 backdrop-blur-sm lg:bg-white overflow-y-auto">
-        <div className="w-full max-w-[400px] sm:max-w-md space-y-6 sm:space-y-8 my-auto">
+      <div className="relative z-10 flex-1 flex items-center justify-center p-4 sm:p-8 lg:p-12 xl:p-24 bg-white/80 backdrop-blur-sm lg:bg-white overflow-y-auto">
+        <div className="w-full max-w-md space-y-8 py-8">
           <div>
             <Link to="/" className="text-2xl font-bold tracking-tight inline-block hover:opacity-80 transition-opacity">
               SkillSync
@@ -95,51 +95,47 @@ export function RegisterPage() {
           </div>
 
           {/* Role Selection */}
-          <div className="space-y-4">
-            <Label className="text-sm font-semibold block text-gray-900">I am a...</Label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+          <div>
+            <Label className="text-sm font-semibold mb-4 block text-gray-900">I am a...</Label>
+            <div className="grid grid-cols-2 gap-4">
               <button
                 type="button"
                 onClick={() => setSelectedRole('student')}
-                className={`group relative p-3 sm:p-4 flex sm:flex-col items-center sm:justify-center border-2 rounded-xl transition-all duration-200 outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 ${
+                className={`group relative p-4 flex flex-col items-center justify-center border-2 rounded-xl transition-all duration-200 outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 ${
                   selectedRole === 'student'
                     ? 'border-black bg-black text-white shadow-lg scale-[1.02]'
                     : 'border-gray-200 bg-white hover:border-black/30 hover:bg-gray-50'
                 }`}
               >
-                <GraduationCap className={`h-6 w-6 sm:h-8 sm:w-8 mr-3 sm:mr-0 sm:mb-3 transition-colors ${
+                <GraduationCap className={`h-8 w-8 mb-3 transition-colors ${
                   selectedRole === 'student' ? 'text-white' : 'text-gray-900'
                 }`} />
-                <div className="flex flex-col sm:items-center">
-                  <div className="text-sm sm:text-base font-bold">Student</div>
-                  <p className={`text-[10px] sm:text-xs mt-0.5 text-left sm:text-center font-medium ${
-                    selectedRole === 'student' ? 'text-white/80' : 'text-gray-500'
-                  }`}>
-                    Find opportunities
-                  </p>
-                </div>
+                <div className="text-base font-bold">Student</div>
+                <p className={`text-xs mt-1 text-center font-medium ${
+                  selectedRole === 'student' ? 'text-white/80' : 'text-gray-500'
+                }`}>
+                  Find opportunities
+                </p>
               </button>
 
               <button
                 type="button"
                 onClick={() => setSelectedRole('industry')}
-                className={`group relative p-3 sm:p-4 flex sm:flex-col items-center sm:justify-center border-2 rounded-xl transition-all duration-200 outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 ${
+                className={`group relative p-4 flex flex-col items-center justify-center border-2 rounded-xl transition-all duration-200 outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 ${
                   selectedRole === 'industry'
                     ? 'border-black bg-black text-white shadow-lg scale-[1.02]'
                     : 'border-gray-200 bg-white hover:border-black/30 hover:bg-gray-50'
                 }`}
               >
-                <Briefcase className={`h-6 w-6 sm:h-8 sm:w-8 mr-3 sm:mr-0 sm:mb-3 transition-colors ${
+                <Briefcase className={`h-8 w-8 mb-3 transition-colors ${
                   selectedRole === 'industry' ? 'text-white' : 'text-gray-900'
                 }`} />
-                <div className="flex flex-col sm:items-center">
-                  <div className="text-sm sm:text-base font-bold">Recruiter</div>
-                  <p className={`text-[10px] sm:text-xs mt-0.5 text-left sm:text-center font-medium ${
-                    selectedRole === 'industry' ? 'text-white/80' : 'text-gray-500'
-                  }`}>
-                    Find talent
-                  </p>
-                </div>
+                <div className="text-base font-bold">Recruiter</div>
+                <p className={`text-xs mt-1 text-center font-medium ${
+                  selectedRole === 'industry' ? 'text-white/80' : 'text-gray-500'
+                }`}>
+                  Find talent
+                </p>
               </button>
             </div>
           </div>
