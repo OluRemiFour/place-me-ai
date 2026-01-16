@@ -126,11 +126,11 @@ export function InternshipsPage() {
                 </CardHeader>
                 <CardContent className="flex-1 space-y-4">
                 <div className="flex items-center text-sm font-medium">
-                    <span className="text-lg font-bold">{item.amount}</span> 
+                    <span className="text-2xl font-bold">{item.amount}</span> 
                 </div> 
                 <div className="flex items-center text-sm text-muted-foreground">
                     <Calendar className="mr-2 h-4 w-4" />
-                    Deadline: {item.deadline ? new Date(item.deadline).toLocaleDateString() : 'Rolling'}
+                    Deadline: {item.deadline || 'Rolling'}
                 </div>
                 <div className="flex flex-wrap gap-2">
                     {getTags(item.tags).map(tag => (

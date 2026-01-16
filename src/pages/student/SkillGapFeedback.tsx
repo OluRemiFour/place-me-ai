@@ -1,6 +1,19 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { ArrowRight, Clock, ExternalLink } from 'lucide-react';
+import { 
+  ArrowRight, 
+  Clock, 
+  ExternalLink, 
+  Code, 
+  Brain, 
+  Layers, 
+  Rocket, 
+  Award, 
+  ChevronRight,
+  BookOpen,
+  CheckCircle2,
+  HelpCircle
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
@@ -13,6 +26,33 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useAuth } from '@/contexts/AuthContext';
+
+// Icon mapping helper
+const IconMap: Record<string, any> = {
+  Code,
+  Brain,
+  Layers,
+  Rocket,
+  Award,
+  BookOpen,
+  CheckCircle2,
+};
+
+const MilestoneIcon = ({ name }: { name: string }) => {
+  const Icon = IconMap[name] || HelpCircle;
+  return <Icon className="w-5 h-5" />;
+};
+
+const renderTextWithBold = (text: string) => {
+  if (!text) return null;
+  const parts = text.split(/(\*\*.*?\*\*)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return <strong key={i} className="font-bold text-black">{part.slice(2, -2)}</strong>;
+    }
+    return part;
+  });
+};
 
 interface RecommendedAction {
   title: string;
@@ -277,7 +317,8 @@ export function SkillGapFeedback() {
           onClick={async () => {
             setIsGenerating(true);
             try {
-              const result = await api.getPersonalizedLearningPath(studentName.split(' '), targetRole);
+              const currentSkills = user?.skills?.map(s => s.name) || [];
+              const result = await api.getPersonalizedLearningPath(currentSkills, targetRole);
               setLearningPath(result);
             } catch (e) {
               console.error(e);
@@ -292,46 +333,80 @@ export function SkillGapFeedback() {
         </Button>
         
         {learningPath && (
-          <div className="mt-8 p-6 bg-gray-50 border border-gray-200 rounded-sm">
-            <h4 className="text-xl font-bold mb-4">AI Recommended Path</h4>
-            <div className="prose max-w-none">
-                {(() => {
-                  try {
-                    const steps = typeof learningPath.raw_response === 'string' 
-                      ? JSON.parse(learningPath.raw_response) 
-                      : learningPath.raw_response;
-                    if (!Array.isArray(steps)) throw new Error("Invalid format");
-                    
-                    return (
-                      <div className="space-y-4">
-                        {steps.map((step: any, i: number) => (
-                           <div key={i} className="flex gap-4 p-4 border rounded-md bg-white hover:border-black transition-colors">
-                              <div className="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-black text-white font-bold">
-                                {i + 1}
-                              </div>
-                              <div className="flex-1 space-y-1">
-                                <div className="flex justify-between items-start">
-                                    <h5 className="font-semibold text-lg">{step.title}</h5>
-                                    <Badge variant={step.priority === 'High' ? 'destructive' : 'secondary'}>{step.priority}</Badge>
-                                </div>
-                                <p className="text-sm opacity-80">{step.description}</p>
-                                <div className="flex items-center gap-4 text-xs opacity-60 mt-2">
-                                    <span className="flex items-center gap-1"><Clock className="w-3 h-3"/> {step.estimated_weeks} weeks</span>
-                                    {step.resource_link && (
-                                        <a href={step.resource_link} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-blue-600 hover:underline">
-                                           <ExternalLink className="w-3 h-3"/> Resource
-                                        </a>
-                                    )}
-                                </div>
-                              </div>
-                           </div>
-                        ))}
+          <div className="mt-8 p-8 bg-white border border-black rounded-sm shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+            <div className="mb-8 border-b border-gray-100 pb-6">
+              <h4 className="text-3xl font-bold mb-4 flex items-center gap-3">
+                <Rocket className="w-8 h-8" />
+                AI Recommended Path
+              </h4>
+              <p className="text-lg leading-relaxed text-gray-700 italic">
+                {renderTextWithBold(learningPath.roadmap)}
+              </p>
+            </div>
+
+            <div className="space-y-8">
+              {learningPath.milestones?.map((milestone: any, i: number) => (
+                <div key={i} className="relative pl-12">
+                  {/* Timeline line */}
+                  {i < learningPath.milestones.length - 1 && (
+                    <div className="absolute left-[19px] top-10 bottom-[-32px] w-0.5 bg-gray-200"></div>
+                  )}
+                  
+                  {/* Milestone Icon */}
+                  <div className="absolute left-0 top-0 w-10 h-10 rounded-full bg-black text-white flex items-center justify-center z-10 shadow-lg">
+                    <MilestoneIcon name={milestone.icon} />
+                  </div>
+
+                  <div className="border border-gray-200 rounded-sm p-6 bg-white hover:border-black transition-all group">
+                    <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-xs font-mono font-bold opacity-40 uppercase tracking-widest">Phase {i+1}</span>
+                          <ChevronRight className="w-3 h-3 opacity-20" />
+                          <Badge variant="outline" className="text-[10px] font-mono border-gray-200">
+                            {milestone.estimated_time}
+                          </Badge>
+                        </div>
+                        <h5 className="text-xl font-bold group-hover:translate-x-1 transition-transform">{milestone.title}</h5>
                       </div>
-                    )
-                  } catch (e) {
-                    return <pre className="whitespace-pre-wrap font-sans text-sm">{typeof learningPath.raw_response === 'string' ? learningPath.raw_response : JSON.stringify(learningPath, null, 2)}</pre>
-                  }
-                })()}
+                    </div>
+
+                    <p className="text-base text-gray-600 mb-6 leading-relaxed">
+                      {renderTextWithBold(milestone.description)}
+                    </p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-3">
+                        <h6 className="text-xs font-bold uppercase tracking-wider opacity-40 flex items-center gap-2">
+                          <BookOpen className="w-3 h-3" />
+                          Recommended Resources
+                        </h6>
+                        <ul className="space-y-2">
+                          {milestone.resources?.map((resource: string, j: number) => (
+                            <li key={j} className="flex items-center gap-2 text-sm">
+                              <div className="w-1.5 h-1.5 bg-black rounded-full"></div>
+                              {resource}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-12 p-6 bg-black text-white rounded-sm flex items-center justify-between">
+              <div>
+                <h6 className="font-bold flex items-center gap-2">
+                  <CheckCircle2 className="w-5 h-5 text-green-400" />
+                  Ready to start your journey?
+                </h6>
+                <p className="text-sm opacity-70">Follow this roadmap to achieve your career goals.</p>
+              </div>
+              <Button variant="outline" className="bg-white text-black hover:bg-gray-100 border-none">
+                Save Roadmap
+              </Button>
             </div>
           </div>
         )}
