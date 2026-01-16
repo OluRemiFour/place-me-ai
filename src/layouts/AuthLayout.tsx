@@ -9,7 +9,7 @@ export function AuthLayout() {
             <h1 className="text-3xl font-bold tracking-tighter">SkillSync</h1>
         </div>
       </div>
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+      <div className="mt-8 sm:mx-auto">
         <Outlet />
       </div>
       <Toaster />
