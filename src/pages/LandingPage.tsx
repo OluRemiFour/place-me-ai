@@ -148,12 +148,12 @@ From scholarships and internships to learning resources, we aggregate unstructur
                    <GraduationCap className="h-24 w-24 -mr-8 -mt-8" />
                 </div>
                 <GraduationCap className="h-10 w-10 mb-4" />
-                <h3 className="text-2xl font-bold mb-2">I'm a Student</h3>
+                <h3 className="text-2xl font-bold mb-2">I'm a Student or Individual</h3>
                 <p className="text-base opacity-60 mb-6">
                   Build your profile, showcase your skills, and get matched with opportunities that fit your career goals.
                 </p>
                 <div className="flex items-center gap-2 font-semibold group-hover:gap-3 transition-all mt-auto">
-                  <span>Create Student Account</span>
+                  <span>Create an Account</span>
                   <ArrowRight className="h-4 w-4" />
                 </div>
               </div>
