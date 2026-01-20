@@ -8,7 +8,7 @@ import { useAuth, SkillDetail } from '@/contexts/AuthContext';
 import { api, Match, calculateReadinessScore } from '@/services/api';
 
 export function StudentDashboard() {
-  const { user, isProfileComplete } = useAuth();
+  const { user, isProfileComplete, refreshUser } = useAuth();
   const navigate = useNavigate();
   const [matches, setMatches] = useState<Match[]>([]);
   const [expandedCategories, setExpandedCategories] = useState<string[]>(['Technical Skills']);
@@ -38,6 +38,8 @@ export function StudentDashboard() {
     })) : [];
 
   useEffect(() => {
+    refreshUser();
+    
     const loadMatches = async () => {
       try {
         if (user?.id) {

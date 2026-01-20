@@ -48,7 +48,7 @@ interface Certification {
 
 export function ProfileBuilder() {
   const navigate = useNavigate();
-  const { user, checkProfileStatus } = useAuth();
+  const { user, checkProfileStatus, refreshUser } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSaving, setIsSaving] = useState(false);
   
@@ -188,6 +188,7 @@ export function ProfileBuilder() {
       
       // Update local state to close the modal
       await checkProfileStatus();
+      await refreshUser();
       navigate('/dashboard');
     } catch (error) {
       console.error("Failed to save profile", error);

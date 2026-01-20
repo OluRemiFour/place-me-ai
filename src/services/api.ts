@@ -160,7 +160,7 @@ export function calculateRoleReadiness(
 export const api = {
   // Auth
   async login(email: string, password: string): Promise<any> {
-    const response = await fetch(`${API_Base_URL}/auth/login`, {
+    const response = await fetch(`${API_Base_URL}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password })
@@ -173,7 +173,7 @@ export const api = {
   },
 
   async register(data: any): Promise<any> {
-    const response = await fetch(`${API_Base_URL}/auth/register`, {
+    const response = await fetch(`${API_Base_URL}/api/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
@@ -186,7 +186,7 @@ export const api = {
   },
 
   async forgotPassword(email: string): Promise<any> {
-      const response = await fetch(`${API_Base_URL}/auth/forgot-password`, {
+      const response = await fetch(`${API_Base_URL}/api/auth/forgot-password`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email })
@@ -196,7 +196,7 @@ export const api = {
   },
 
   async resetPassword(data: any): Promise<any> {
-    const response = await fetch(`${API_Base_URL}/auth/reset-password`, {
+    const response = await fetch(`${API_Base_URL}/api/auth/reset-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
@@ -206,7 +206,7 @@ export const api = {
   },
 
   async sendOTP(email: string): Promise<any> {
-    const response = await fetch(`${API_Base_URL}/auth/send-otp`, {
+    const response = await fetch(`${API_Base_URL}/api/auth/send-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })
@@ -216,7 +216,7 @@ export const api = {
   },
 
   async verifyOTP(email: string, otp: string): Promise<any> {
-    const response = await fetch(`${API_Base_URL}/auth/verify-otp`, {
+    const response = await fetch(`${API_Base_URL}/api/auth/verify-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, otp })
@@ -229,13 +229,13 @@ export const api = {
   },
 
   async getProfileStatus(userId: string): Promise<any> {
-    const response = await fetch(`${API_Base_URL}/auth/profile-status?user_id=${userId}`);
+    const response = await fetch(`${API_Base_URL}/api/auth/profile-status?user_id=${userId}`);
     if (!response.ok) throw new Error('Status check failed');
     return await response.json();
   },
 
   async getProfile(userId: string): Promise<any> {
-    const response = await fetch(`${API_Base_URL}/auth/profile?user_id=${userId}`);
+    const response = await fetch(`${API_Base_URL}/api/auth/profile?user_id=${userId}`);
     if (!response.ok) throw new Error('Failed to fetch profile');
     const data = await response.json();
     
@@ -248,7 +248,7 @@ export const api = {
   },
 
   async googleAuth(id_token: string, role?: string): Promise<any> {
-    const response = await fetch(`${API_Base_URL}/auth/google`, {
+    const response = await fetch(`${API_Base_URL}/api/auth/google`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id_token, role })
@@ -262,7 +262,7 @@ export const api = {
 
   async analyzeSkillGap(currentSkills: string[], targetRole: string, major: string): Promise<any> {
     try {
-        const response = await fetch(`${API_Base_URL}/skills/gap-analysis`, {
+        const response = await fetch(`${API_Base_URL}/api/skills/gap-analysis`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ current_skills: currentSkills, target_role: targetRole, major })
@@ -277,7 +277,7 @@ export const api = {
 
   async verifySkill(skillName: string, evidenceUrl?: string): Promise<any> {
     try {
-        const response = await fetch(`${API_Base_URL}/skills/verify`, {
+        const response = await fetch(`${API_Base_URL}/api/skills/verify`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ skill_name: skillName, evidence_url: evidenceUrl })
@@ -290,7 +290,7 @@ export const api = {
   },
 
   async updateProfile(userId: string, data: any): Promise<any> {
-    const response = await fetch(`${API_Base_URL}/auth/update-profile?user_id=${userId}`, {
+    const response = await fetch(`${API_Base_URL}/api/auth/update-profile?user_id=${userId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
@@ -303,7 +303,7 @@ export const api = {
   },
 
   async verifyEmail(token: string): Promise<any> {
-    const response = await fetch(`${API_Base_URL}/auth/verify-email?token=${encodeURIComponent(token)}`, {
+    const response = await fetch(`${API_Base_URL}/api/auth/verify-email?token=${encodeURIComponent(token)}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }
     });
@@ -316,14 +316,14 @@ export const api = {
 
   // Python Backend Integration
   async getScholarships(): Promise<Scholarship[]> {
-    const response = await fetch(`${API_Base_URL}/scholarships/`);
+    const response = await fetch(`${API_Base_URL}/api/scholarships/`);
     if (!response.ok) return [];
     return await response.json();
   },
 
   async scanScholarships(profile: any): Promise<Scholarship[]> {
     try {
-        const response = await fetch(`${API_Base_URL}/scholarships/scan`, {
+        const response = await fetch(`${API_Base_URL}/api/scholarships/scan`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(profile)
@@ -337,14 +337,14 @@ export const api = {
   },
 
   async getInternships(): Promise<Scholarship[]> {
-    const response = await fetch(`${API_Base_URL}/internships/`); 
+    const response = await fetch(`${API_Base_URL}/api/internships/`); 
     if (!response.ok) return [];
     return await response.json();
   },
 
   async scanInternships(profile: any): Promise<Scholarship[]> {
       try {
-          const response = await fetch(`${API_Base_URL}/internships/scan`, {
+          const response = await fetch(`${API_Base_URL}/api/internships/scan`, {
               method: 'POST',
               headers: {'Content-Type': 'application/json'},
               body: JSON.stringify(profile)
@@ -358,7 +358,7 @@ export const api = {
   },
 
   async getPersonalizedLearningPath(skills: string[], goal: string): Promise<any> {
-    const response = await fetch(`${API_Base_URL}/recommendation/learning-path`, {
+    const response = await fetch(`${API_Base_URL}/api/recommendation/learning-path`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ skills, goal })
@@ -368,7 +368,7 @@ export const api = {
   },
   // Students
   async getStudents(): Promise<Student[]> {
-    const response = await fetch(`${API_Base_URL}/students/`);
+    const response = await fetch(`${API_Base_URL}/api/students/`);
     if (!response.ok) return [];
     const users = await response.json();
     return users.map((u: any) => {
@@ -397,7 +397,7 @@ export const api = {
 
   async getStudent(id: string): Promise<Student | null> {
     try {
-        const response = await fetch(`${API_Base_URL}/students/${id}`);
+        const response = await fetch(`${API_Base_URL}/api/students/${id}`);
         if (!response.ok) return null;
         const u = await response.json();
         
@@ -433,7 +433,7 @@ export const api = {
   },
 
   async searchStudents(query: string): Promise<Student[]> {
-    const response = await fetch(`${API_Base_URL}/students/search?query=${encodeURIComponent(query)}`);
+    const response = await fetch(`${API_Base_URL}/api/students/search?query=${encodeURIComponent(query)}`);
     if (!response.ok) return [];
     const users = await response.json();
     return users.map((u: any) => {
@@ -462,7 +462,7 @@ export const api = {
 
   // Roles
   async getRoles(): Promise<Role[]> {
-    const response = await fetch(`${API_Base_URL}/industry/roles`);
+    const response = await fetch(`${API_Base_URL}/api/industry/roles`);
     if (!response.ok) return [];
     const roles = await response.json();
     return roles.map((r: any) => ({
@@ -489,7 +489,7 @@ export const api = {
   },
 
   async createRole(role: any): Promise<any> {
-    const response = await fetch(`${API_Base_URL}/industry/roles`, {
+    const response = await fetch(`${API_Base_URL}/api/industry/roles`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(role)
@@ -502,13 +502,13 @@ export const api = {
   },
 
   async getRoleApplications(roleId: string): Promise<any[]> {
-    const response = await fetch(`${API_Base_URL}/industry/roles/${roleId}/applications`);
+    const response = await fetch(`${API_Base_URL}/api/industry/roles/${roleId}/applications`);
     if (!response.ok) return [];
     return await response.json();
   },
 
   async updateApplicationStatus(appId: string, status: string): Promise<any> {
-    const response = await fetch(`${API_Base_URL}/industry/applications/${appId}/status?status=${status}`, {
+    const response = await fetch(`${API_Base_URL}/api/industry/applications/${appId}/status?status=${status}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' }
     });
@@ -521,13 +521,13 @@ export const api = {
 
   // Matching
   async getMatchesForRole(roleId: string): Promise<Match[]> {
-    const response = await fetch(`${API_Base_URL}/matches/roles/${roleId}`);
+    const response = await fetch(`${API_Base_URL}/api/matches/roles/${roleId}`);
     if (!response.ok) return [];
     return await response.json();
   },
 
   async getMatchesForStudent(studentId: string): Promise<Match[]> {
-      const response = await fetch(`${API_Base_URL}/matches/students/${studentId}`);
+      const response = await fetch(`${API_Base_URL}/api/matches/students/${studentId}`);
       if (!response.ok) return [];
       return await response.json();
   },
@@ -541,7 +541,7 @@ export const api = {
   },
 
   async getDashboardMetrics(): Promise<any> {
-    const response = await fetch(`${API_Base_URL}/industry/dashboard-metrics`);
+    const response = await fetch(`${API_Base_URL}/api/industry/dashboard-metrics`);
     if (!response.ok) {
         return {
           totalStudents: 0,
@@ -561,7 +561,7 @@ export const api = {
 
   async sendMessage(data: any): Promise<any> {
     try {
-      const response = await fetch(`${API_Base_URL}/communication/message`, {
+      const response = await fetch(`${API_Base_URL}/api/communication/message`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
@@ -575,7 +575,7 @@ export const api = {
 
   async scheduleInterview(data: any): Promise<any> {
     try {
-      const response = await fetch(`${API_Base_URL}/communication/interview`, {
+      const response = await fetch(`${API_Base_URL}/api/communication/interview`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
@@ -589,7 +589,7 @@ export const api = {
 
   async applyForRole(roleId: string, studentId: string, message?: string): Promise<any> {
     try {
-      const response = await fetch(`${API_Base_URL}/communication/apply`, {
+      const response = await fetch(`${API_Base_URL}/api/communication/apply`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ role_id: roleId, student_id: studentId, message })
@@ -603,7 +603,7 @@ export const api = {
 
   async getStudentApplications(studentId: string): Promise<any[]> {
     try {
-      const response = await fetch(`${API_Base_URL}/communication/applications/student/${studentId}`);
+      const response = await fetch(`${API_Base_URL}/api/communication/applications/student/${studentId}`);
       if (!response.ok) return [];
       return await response.json();
     } catch (e) {
