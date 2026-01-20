@@ -111,8 +111,7 @@ export function LandingPage() {
           </h1>
           <p className="text-lg md:text-xl mb-8 md:mb-12 max-w-2xl opacity-80 leading-relaxed">
             {/* AI-powered skill analysis connects students with industry requirements in seconds. Built for recruiters who demand precision and students who demand opportunity. */}
-        We extract, analyze, and organize unstructured web data into actionable insights, powering scholarship discovery, internship aggregation, and learning resource consolidation at scale.
-          </p>
+From scholarships and internships to learning resources, we aggregate unstructured web data and convert it into clean, ranked intelligence — so you never miss what matters.          </p>
           {isAuthenticated ? (
             <Link to={dashboardPath}>
               <Button className="h-12 px-8 text-base font-semibold group btn-interaction">
