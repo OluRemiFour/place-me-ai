@@ -481,9 +481,6 @@ export const api = {
   },
 
   async getRole(id: string): Promise<Role | null> {
-    // We can fetch from list or implement specific endpoint if needed. 
-    // industry.py doesn't have get_role single yet, but we can assume we can filter from list or add it.
-    // For now, let's just fetch all and find.
     const roles = await this.getRoles();
     return roles.find(r => r.id === id) || null;
   },

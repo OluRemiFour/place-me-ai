@@ -28,7 +28,7 @@ import { RequireRole } from "@/components/RequireRole";
 import { ProfileGuard } from "@/components/auth/ProfileGuard";
 
 function App() {
-  const { user, isProfileComplete, isVerified } = useAuth(); // Destructure isVerified from context
+  const { user, isProfileComplete, isVerified } = useAuth(); 
 
   return (
     <Suspense fallback={<p>Loading...</p>}>
