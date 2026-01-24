@@ -8,7 +8,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { GoogleOAuthProvider } from '@react-oauth/google';
 
 const basename = import.meta.env.BASE_URL;
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+const GOOGLE_CLIENT_ID = (import.meta.env.VITE_GOOGLE_CLIENT_ID || "").trim();
 
 if (!GOOGLE_CLIENT_ID) {
   console.error("VITE_GOOGLE_CLIENT_ID is missing from environment variables!");
