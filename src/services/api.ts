@@ -99,7 +99,9 @@ export interface Scholarship {
   tags: string;
 }
 
-const API_Base_URL = import.meta.env.VITE_API_BASE_URL;
+const API_Base_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  "https://skillsync-backend-wn3e.onrender.com";
 
 const rolesDB: Role[] = [];
 
